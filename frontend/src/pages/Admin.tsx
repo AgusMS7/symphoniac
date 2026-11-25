@@ -1,5 +1,3 @@
-"use client";
-
 import { useState, useEffect } from "react";
 import { InstrumentoForm } from "../components/InstrumentoForm";
 import { CategoriaAdmin } from "../components/CategoriaAdmin";

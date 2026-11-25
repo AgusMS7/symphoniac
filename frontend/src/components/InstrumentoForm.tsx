@@ -1,5 +1,3 @@
-"use client";
-
 import type React from "react";
 import { useState, useEffect, useRef } from "react";
 import type { Instrumento } from "../types/Instrumento";

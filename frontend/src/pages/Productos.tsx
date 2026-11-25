@@ -1,5 +1,3 @@
-"use client";
-
 import { useState, useEffect } from "react";
 import { InstrumentoCard } from "../components/InstrumentoCard";
 import { FiltroCategoria } from "../components/FiltroCategoria";
