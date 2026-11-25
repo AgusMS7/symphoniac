@@ -9,7 +9,7 @@ Monorepo con el frontend (React + Vite) y el backend (Spring Boot + PostgreSQL).
 
 | Capa | Tecnología |
 |---|---|
-| Frontend | React 18, TypeScript 5, Vite 5, React Router 6 |
+| Frontend | React 19, TypeScript 5.9, Vite 7, React Router 6 |
 | Backend | Java 17, Spring Boot 3.5, Spring Data JPA, Bean Validation |
 | Base de datos | PostgreSQL |
 | Build | npm / Maven (wrapper incluido) |
@@ -19,7 +19,7 @@ Monorepo con el frontend (React + Vite) y el backend (Spring Boot + PostgreSQL).
 ```
 symphoniac/
   frontend/   Aplicación React (Vite). Páginas: catálogo, detalle, admin, ubicación.
-  backend/    API REST Spring Boot + scripts SQL en backend/scripts/.
+   backend/    API REST Spring Boot + SQL reproducible en backend/db/.
   docker-compose.yml   PostgreSQL local.
 ```
 
@@ -40,10 +40,8 @@ symphoniac/
    Luego aplicá el esquema y los datos de ejemplo:
 
    ```bash
-   psql -h localhost -U postgres -d instrumentosdb -f backend/scripts/02-crear-tablas.sql
-   psql -h localhost -U postgres -d instrumentosdb -f backend/scripts/03-insertar-datos-json.sql
-   psql -h localhost -U postgres -d instrumentosdb -f backend/scripts/06-crear-tablas-pedidos.sql
-   psql -h localhost -U postgres -d instrumentosdb -f backend/scripts/07-datos-prueba-pedidos.sql
+    psql -h localhost -U postgres -d symphoniac -f backend/db/schema.sql
+    psql -h localhost -U postgres -d symphoniac -f backend/db/seed.sql
    ```
 
 2. **Backend** (puerto 3001):

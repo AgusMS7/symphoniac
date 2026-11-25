@@ -50,17 +50,17 @@ psql --version # Debe ser 12 o superior
 psql -U postgres -f scripts/01-crear-bd.sql
 
 # Crear tablas principales
-psql -U postgres -d instrumentosdb -f scripts/02-crear-tablas.sql
+psql -U postgres -d symphoniac -f scripts/02-crear-tablas.sql
 
 # Insertar datos iniciales
-psql -U postgres -d instrumentosdb -f scripts/03-insertar-datos-json.sql
-psql -U postgres -d instrumentosdb -f scripts/04-datos-adicionales.sql
+psql -U postgres -d symphoniac -f scripts/03-insertar-datos-json.sql
+psql -U postgres -d symphoniac -f scripts/04-datos-adicionales.sql
 
 # Crear tablas de pedidos
-psql -U postgres -d instrumentosdb -f scripts/09-datos-prueba-pedidos-final.sql
+psql -U postgres -d symphoniac -f scripts/09-datos-prueba-pedidos-final.sql
 
 # Verificar instalación
-psql -U postgres -d instrumentosdb -f scripts/10-verificar-todo.sql
+psql -U postgres -d symphoniac -f scripts/10-verificar-todo.sql
 \`\`\`
 
 ### 2. Configurar Aplicación
@@ -75,7 +75,7 @@ cd instrumentos-back-spring
 # - Usuario: postgres
 # - Contraseña: postgres (cambiar según tu configuración)
 # - Puerto: 5432
-# - Base de datos: instrumentosdb
+# - Base de datos: symphoniac
 # - Puerto del servidor: 3001
 \`\`\`
 
@@ -406,7 +406,7 @@ bash test-api-completo.sh
 \`\`\`
 src/
 ├── main/
-│   ├── java/com/instrumentos/
+│   ├── java/com/symphoniac/
 │   │   ├── config/          # Configuraciones (CORS, Web)
 │   │   │   └── WebConfig.java
 │   │   ├── controller/      # Controladores REST
@@ -465,7 +465,7 @@ src/
 ### application.properties
 \`\`\`properties
 # Base de datos PostgreSQL
-spring.datasource.url=jdbc:postgresql://localhost:5432/instrumentosdb
+spring.datasource.url=jdbc:postgresql://localhost:5432/symphoniac
 spring.datasource.username=postgres
 spring.datasource.password=postgres
 spring.datasource.driver-class-name=org.postgresql.Driver
@@ -491,7 +491,7 @@ spring.servlet.multipart.max-request-size=10MB
 ## 🚨 Notas Importantes
 
 1. **Puerto del servidor**: La aplicación corre en el puerto **3001** para evitar conflictos
-2. **Base de datos**: Requiere PostgreSQL con la base de datos `instrumentosdb`
+2. **Base de datos**: Requiere PostgreSQL con la base de datos `symphoniac`
 3. **Imágenes**: Se almacenan en `public/images/` y `src/main/resources/static/images/`
 4. **CORS**: Configurado para permitir localhost en cualquier puerto
 5. **Paginación**: Solo disponible para instrumentos con el parámetro `paginated=true`
