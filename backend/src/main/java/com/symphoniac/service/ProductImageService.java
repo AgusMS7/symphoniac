@@ -9,11 +9,12 @@ import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.symphoniac.dto.ProductImageDTO;
+import com.symphoniac.exception.ResourceNotFoundException;
 import com.symphoniac.model.Instrumento;
 import com.symphoniac.model.ProductImage;
 import com.symphoniac.repository.InstrumentoRepository;
@@ -24,20 +25,25 @@ import com.symphoniac.repository.ProductImageRepository;
 public class ProductImageService {
     
     private static final Logger logger = LoggerFactory.getLogger(ProductImageService.class);
-    private static final String UPLOAD_DIR = "public/images/";
-    
-    @Autowired
-    private ProductImageRepository productImageRepository;
-    
-    @Autowired
-    private InstrumentoRepository instrumentoRepository;
+
+    private final ProductImageRepository productImageRepository;
+    private final InstrumentoRepository instrumentoRepository;
+    private final String uploadDir;
+
+    public ProductImageService(ProductImageRepository productImageRepository,
+                               InstrumentoRepository instrumentoRepository,
+                               @Value("${app.upload.dir:public/images}") String uploadDir) {
+        this.productImageRepository = productImageRepository;
+        this.instrumentoRepository = instrumentoRepository;
+        this.uploadDir = uploadDir;
+    }
     
     @Transactional
     public ProductImageDTO createImage(Long instrumentoId, String filename, String altText, boolean isPrimary) {
         logger.debug("Creando imagen para instrumento ID: {}, archivo: {}", instrumentoId, filename);
         
         Instrumento instrumento = instrumentoRepository.findById(instrumentoId)
-            .orElseThrow(() -> new RuntimeException("Instrumento no encontrado"));
+            .orElseThrow(() -> new ResourceNotFoundException("Instrumento no encontrado"));
         
         // Si esta imagen será la principal, desmarcar las demás
         if (isPrimary) {
@@ -77,7 +83,7 @@ public class ProductImageService {
         logger.debug("Estableciendo imagen ID {} como principal", imageId);
         
         ProductImage image = productImageRepository.findById(imageId)
-            .orElseThrow(() -> new RuntimeException("Imagen no encontrada"));
+            .orElseThrow(() -> new ResourceNotFoundException("Imagen no encontrada"));
         
         // Desmarcar otras imágenes principales del mismo instrumento
         productImageRepository.clearPrimaryImages(image.getInstrumento().getId());
@@ -95,7 +101,7 @@ public class ProductImageService {
         logger.debug("Eliminando imagen ID: {}", imageId);
         
         ProductImage image = productImageRepository.findById(imageId)
-            .orElseThrow(() -> new RuntimeException("Imagen no encontrada"));
+            .orElseThrow(() -> new ResourceNotFoundException("Imagen no encontrada"));
         
         // Eliminar archivo físico
         deletePhysicalFile(image.getImageUrl());
@@ -123,7 +129,7 @@ public class ProductImageService {
     
     private void deletePhysicalFile(String filename) {
         try {
-            Path imagePath = Paths.get(UPLOAD_DIR).resolve(filename);
+            Path imagePath = Paths.get(uploadDir).resolve(filename);
             boolean deleted = Files.deleteIfExists(imagePath);
             if (deleted) {
                 logger.debug("Archivo físico eliminado: {}", filename);

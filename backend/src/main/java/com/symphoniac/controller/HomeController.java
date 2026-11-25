@@ -12,7 +12,7 @@ public class HomeController {
     @GetMapping("/")
     public Map<String, Object> home() {
         Map<String, Object> response = new HashMap<>();
-        response.put("message", "API de Instrumentos Sandoval funcionando");
+        response.put("message", "API de Symphoniac funcionando");
         response.put("version", "1.0.0");
         response.put("framework", "Spring Boot");
         response.put("language", "Java");
@@ -23,8 +23,10 @@ public class HomeController {
         endpoints.put("crear_instrumento", "POST /api/instrumentos");
         endpoints.put("actualizar_instrumento", "PUT /api/instrumentos/{id}");
         endpoints.put("eliminar_instrumento", "DELETE /api/instrumentos/{id}");
-        endpoints.put("buscar", "/api/instrumentos/search");
-        endpoints.put("envio_gratis", "/api/instrumentos/free-shipping");
+        endpoints.put("buscar", "/api/instrumentos/buscar?nombre=");
+        endpoints.put("instrumentos_por_categoria", "/api/instrumentos/categoria/{categoriaId}");
+        endpoints.put("categorias", "/api/categorias");
+        endpoints.put("pedidos", "/api/pedidos");
         endpoints.put("images", "/images/{filename}");
         
         response.put("endpoints", endpoints);

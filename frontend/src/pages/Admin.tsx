@@ -42,8 +42,6 @@ export const Admin = () => {
         categoriaService.getAll(),
       ]);
 
-      console.log("Admin - Instrumentos response:", instrumentosRes);
-      console.log("Admin - Categorías response:", categoriasRes);
 
       // Manejar respuesta de instrumentos
       let instrumentosArray: Instrumento[] = [];
@@ -101,15 +99,9 @@ export const Admin = () => {
           return { id: instrumento.id, image: response.data };
         } else {
           // No hay imagen principal configurada, esto es normal
-          console.log(
-            `No hay imagen principal configurada para instrumento ${instrumento.id}`,
-          );
         }
       } catch (error) {
         // Error de conexión, manejar silenciosamente
-        console.log(
-          `No se pudo cargar imagen principal para instrumento ${instrumento.id}`,
-        );
       }
       return { id: instrumento.id, image: null };
     });
@@ -150,7 +142,6 @@ export const Admin = () => {
 
     try {
       const response = await instrumentoService.delete(id);
-      console.log("Delete response:", response);
 
       // Manejar diferentes tipos de respuesta
       if (response.success || response.status === 200 || !response.error) {
@@ -173,7 +164,6 @@ export const Admin = () => {
         response = await instrumentoService.create(data);
       }
 
-      console.log("Form submit response:", response);
 
       // Manejar diferentes tipos de respuesta
       let savedInstrumento;
@@ -220,9 +210,6 @@ export const Admin = () => {
   };
 
   const handleImageError = (instrumentoId: string) => {
-    console.log(
-      `Error cargando imagen en admin para instrumento ${instrumentoId}`,
-    );
     setImageErrors((prev) => ({ ...prev, [instrumentoId]: true }));
   };
 

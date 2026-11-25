@@ -18,7 +18,6 @@ export const Home = () => {
     try {
       setError(null);
       const response = await instrumentoService.getAllSimple();
-      console.log("Respuesta de API Home:", response);
 
       // Manejar diferentes tipos de respuesta
       let instrumentosArray: Instrumento[] = [];
@@ -41,7 +40,6 @@ export const Home = () => {
         instrumentosArray = response.data;
       }
 
-      console.log("Instrumentos procesados:", instrumentosArray);
       setInstrumentos(instrumentosArray);
     } catch (error) {
       console.error("Error conectando al backend:", error);
@@ -153,9 +151,6 @@ export const Home = () => {
                     alt={instrumento.instrumento}
                     className="slide-image"
                     onError={(e) => {
-                      console.log(
-                        `Error cargando imagen en slider para instrumento ${instrumento.id}`,
-                      );
                       e.currentTarget.src = "/icons/no-image.svg";
                     }}
                   />

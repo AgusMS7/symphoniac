@@ -35,11 +35,6 @@ export const handleImageError = (
 
   // Evitar loops infinitos de error
   if (target.src !== fallbackUrl) {
-    if (instrumentoId) {
-      console.log(
-        `Error cargando imagen para instrumento ${instrumentoId}, usando imagen por defecto`,
-      );
-    }
     target.src = fallbackUrl;
   }
 };
@@ -59,15 +54,9 @@ export const loadPrimaryImageSafely = async (
       onSuccess(response.data);
     } else {
       // No hay imagen principal configurada, esto es normal
-      console.log(
-        `No hay imagen principal configurada para instrumento ${instrumentoId}`,
-      );
     }
   } catch (error) {
     // Error de conexión o servidor, registrar silenciosamente
-    console.log(
-      `No se pudo cargar imagen principal para instrumento ${instrumentoId}`,
-    );
   } finally {
     onComplete?.();
   }

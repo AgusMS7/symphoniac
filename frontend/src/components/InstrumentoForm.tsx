@@ -81,15 +81,9 @@ export const InstrumentoForm = ({
         return;
       } else {
         // No hay imagen principal configurada, intentar con imagen legacy
-        console.log(
-          `No hay imagen principal configurada para instrumento ${instrumentoId}, intentando con imagen legacy`,
-        );
       }
     } catch (error) {
       // Error de conexión, intentar con imagen legacy
-      console.log(
-        `No se pudo cargar imagen principal para instrumento ${instrumentoId}, intentando con imagen legacy`,
-      );
     }
 
     // Si no hay imagen principal, usar la imagen legacy
@@ -180,7 +174,6 @@ export const InstrumentoForm = ({
       setImagePreview(null);
       setCurrentImageId(null);
       setSelectedFile(null);
-      console.log("Imagen eliminada exitosamente");
     } catch (error) {
       console.error("Error eliminando imagen:", error);
       alert("Error al eliminar la imagen");
@@ -217,11 +210,9 @@ export const InstrumentoForm = ({
         },
       };
 
-      console.log("Enviando datos:", submitData);
 
       // Guardar el instrumento y obtener la respuesta
       const response = await onSubmit(submitData);
-      console.log("Respuesta del submit:", response);
 
       // Obtener el ID del instrumento (puede venir de diferentes formas según la respuesta)
       let instrumentoId: number | null = null;
@@ -238,14 +229,12 @@ export const InstrumentoForm = ({
       // Si hay una imagen seleccionada y tenemos un ID, subirla
       if (selectedFile && instrumentoId) {
         try {
-          console.log(`Subiendo imagen para instrumento ID: ${instrumentoId}`);
           const uploadResponse = await imageService.upload(
             instrumentoId,
             selectedFile,
             formData.instrumento,
             true,
           );
-          console.log("Imagen subida exitosamente:", uploadResponse);
 
           // Actualizar el preview con la nueva imagen subida
           if (uploadResponse.success && uploadResponse.data) {
@@ -525,7 +514,7 @@ export const InstrumentoForm = ({
         </div>
 
         <div className="form-group full-width">
-          <label htmlFor="descripcion">Descripci��n</label>
+          <label htmlFor="descripcion">Descripción</label>
           <textarea
             id="descripcion"
             name="descripcion"

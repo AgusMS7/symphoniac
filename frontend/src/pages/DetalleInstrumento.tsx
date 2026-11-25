@@ -35,7 +35,6 @@ export const DetalleInstrumento: React.FC = () => {
     try {
       setLoading(true);
       const response = await instrumentoService.getById(instrumentoId);
-      console.log("Respuesta instrumento:", response);
 
       if (response.success && response.data) {
         const instrumentoData = response.data;
@@ -87,15 +86,9 @@ export const DetalleInstrumento: React.FC = () => {
           setPrimaryImage(primaryResponse.data);
         } else {
           // No hay imagen principal configurada, esto es normal
-          console.log(
-            `No hay imagen principal configurada para instrumento ${instrumentoId}`,
-          );
         }
       } catch (error) {
         // Error de conexión, no mostrar error crítico
-        console.log(
-          `No se pudo cargar imagen principal para instrumento ${instrumentoId}`,
-        );
       }
     } catch (error) {
       console.error("Error al cargar imágenes:", error);
@@ -130,7 +123,6 @@ export const DetalleInstrumento: React.FC = () => {
   };
 
   const handleImageError = () => {
-    console.log(`Error cargando imagen en detalle: ${instrumento?.id}`);
     setImageError(true);
   };
 

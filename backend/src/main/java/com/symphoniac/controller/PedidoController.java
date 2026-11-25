@@ -3,11 +3,11 @@ package com.symphoniac.controller;
 import com.symphoniac.dto.ApiResponse;
 import com.symphoniac.dto.CrearPedidoRequest;
 import com.symphoniac.dto.PedidoDTO;
+import com.symphoniac.exception.BusinessException;
 import com.symphoniac.service.PedidoService;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,13 +19,15 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/pedidos")
-@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:5173"})
 public class PedidoController {
 
     private static final Logger logger = LoggerFactory.getLogger(PedidoController.class);
 
-    @Autowired
-    private PedidoService pedidoService;
+    private final PedidoService pedidoService;
+
+    public PedidoController(PedidoService pedidoService) {
+        this.pedidoService = pedidoService;
+    }
 
     @PostMapping
     public ResponseEntity<ApiResponse<PedidoDTO>> crearPedido(@Valid @RequestBody CrearPedidoRequest request) {
@@ -41,9 +43,9 @@ public class PedidoController {
             logger.info("Pedido creado exitosamente con ID: {}", pedidoCreado.getId());
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
             
-        } catch (RuntimeException e) {
-            logger.warn("Error de validación al crear pedido: {}", e.getMessage());
-            ApiResponse<PedidoDTO> response = new ApiResponse<>(false, "Error en la operacion", null);
+        } catch (BusinessException e) {
+            logger.warn("Error de negocio al crear pedido: {}", e.getMessage());
+            ApiResponse<PedidoDTO> response = new ApiResponse<>(false, e.getMessage(), null);
             return ResponseEntity.badRequest().body(response);
             
         } catch (Exception e) {

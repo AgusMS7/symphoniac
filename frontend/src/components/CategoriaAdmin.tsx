@@ -78,7 +78,6 @@ export const CategoriaAdmin = ({ categorias, setCategorias, onBack }: CategoriaA
         response = await categoriaService.create(formData)
       }
 
-      console.log("Respuesta categoría:", response)
 
       if (response.success && response.data) {
         const savedCategoria = response.data

@@ -32,7 +32,6 @@ export const Productos = () => {
         categoriaService.getAll(),
       ]);
 
-      console.log("Productos - Instrumentos response:", instrumentosRes);
 
       // Manejar respuesta de instrumentos - evitar duplicados
       let instrumentosArray: Instrumento[] = [];
