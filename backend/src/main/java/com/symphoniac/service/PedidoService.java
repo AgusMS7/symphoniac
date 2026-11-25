@@ -4,6 +4,8 @@ import com.symphoniac.dto.CrearPedidoRequest;
 import com.symphoniac.dto.ItemCarritoDTO;
 import com.symphoniac.dto.PedidoDTO;
 import com.symphoniac.dto.PedidoDetalleDTO;
+import com.symphoniac.exception.BusinessException;
+import com.symphoniac.exception.ResourceNotFoundException;
 import com.symphoniac.model.Instrumento;
 import com.symphoniac.model.Pedido;
 import com.symphoniac.model.PedidoDetalle;
@@ -12,7 +14,6 @@ import com.symphoniac.repository.PedidoDetalleRepository;
 import com.symphoniac.repository.PedidoRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,14 +29,17 @@ public class PedidoService {
 
     private static final Logger logger = LoggerFactory.getLogger(PedidoService.class);
 
-    @Autowired
-    private PedidoRepository pedidoRepository;
+    private final PedidoRepository pedidoRepository;
+    private final PedidoDetalleRepository pedidoDetalleRepository;
+    private final InstrumentoRepository instrumentoRepository;
 
-    @Autowired
-    private PedidoDetalleRepository pedidoDetalleRepository;
-
-    @Autowired
-    private InstrumentoRepository instrumentoRepository;
+    public PedidoService(PedidoRepository pedidoRepository,
+                         PedidoDetalleRepository pedidoDetalleRepository,
+                         InstrumentoRepository instrumentoRepository) {
+        this.pedidoRepository = pedidoRepository;
+        this.pedidoDetalleRepository = pedidoDetalleRepository;
+        this.instrumentoRepository = instrumentoRepository;
+    }
 
     @Transactional
     public PedidoDTO crearPedido(CrearPedidoRequest request) {
@@ -45,10 +49,10 @@ public class PedidoService {
             // Validar que todos los instrumentos existan
             for (ItemCarritoDTO item : request.getInstrumentos()) {
                 if (!instrumentoRepository.existsById(item.getInstrumentoId())) {
-                    throw new RuntimeException("Instrumento no encontrado con ID: " + item.getInstrumentoId());
+                    throw new BusinessException("Instrumento no encontrado con ID: " + item.getInstrumentoId());
                 }
                 if (item.getCantidad() <= 0) {
-                    throw new RuntimeException("La cantidad debe ser mayor a 0");
+                    throw new BusinessException("La cantidad debe ser mayor a 0");
                 }
             }
 
@@ -89,7 +93,7 @@ public class PedidoService {
             return convertToDTO(pedidoGuardado);
 
         } catch (RuntimeException e) {
-            logger.error("Error de negocio al crear pedido: {}", e.getMessage());
+            logger.error("Error al crear pedido: {}", e.getMessage());
             throw e;
         } catch (Exception e) {
             logger.error("Error al crear pedido: {}", e.getMessage(), e);
@@ -140,7 +144,7 @@ public class PedidoService {
             logger.debug("Eliminando pedido ID: {}", id);
             
             if (!pedidoRepository.existsById(id)) {
-                throw new RuntimeException("Pedido no encontrado con ID: " + id);
+                throw new ResourceNotFoundException("Pedido no encontrado con ID: " + id);
             }
             
             pedidoRepository.deleteById(id);

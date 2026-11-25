@@ -5,11 +5,12 @@ import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.symphoniac.exception.BusinessException;
+import com.symphoniac.exception.ResourceNotFoundException;
 import com.symphoniac.model.Categoria;
 import com.symphoniac.repository.CategoriaRepository;
 
@@ -18,9 +19,12 @@ import com.symphoniac.repository.CategoriaRepository;
 public class CategoriaService {
     
     private static final Logger logger = LoggerFactory.getLogger(CategoriaService.class);
-    
-    @Autowired
-    private CategoriaRepository categoriaRepository;
+
+    private final CategoriaRepository categoriaRepository;
+
+    public CategoriaService(CategoriaRepository categoriaRepository) {
+        this.categoriaRepository = categoriaRepository;
+    }
     
     public List<Categoria> findAll() {
         logger.debug("Obteniendo todas las categorías");
@@ -37,7 +41,7 @@ public class CategoriaService {
         logger.debug("Guardando categoría: {}", categoria.getDenominacion());
         
         if (categoriaRepository.existsByDenominacionIgnoreCase(categoria.getDenominacion())) {
-            throw new RuntimeException("Ya existe una categoría con esa denominación");
+            throw new BusinessException("Ya existe una categoría con esa denominación");
         }
         
         try {
@@ -46,7 +50,7 @@ public class CategoriaService {
             return savedCategoria;
         } catch (DataIntegrityViolationException e) {
             logger.error("Error de integridad al guardar categoría: {}", e.getMessage());
-            throw new RuntimeException("Error de integridad de datos al guardar la categoría");
+            throw new BusinessException("Error de integridad de datos al guardar la categoría");
         }
     }
     
@@ -58,7 +62,7 @@ public class CategoriaService {
                 .map(categoria -> {
                     if (!categoria.getDenominacion().equalsIgnoreCase(categoriaDetails.getDenominacion()) &&
                         categoriaRepository.existsByDenominacionIgnoreCase(categoriaDetails.getDenominacion())) {
-                        throw new RuntimeException("Ya existe una categoría con esa denominación");
+                        throw new BusinessException("Ya existe una categoría con esa denominación");
                     }
                     categoria.setDenominacion(categoriaDetails.getDenominacion());
                     
@@ -68,10 +72,10 @@ public class CategoriaService {
                         return updatedCategoria;
                     } catch (DataIntegrityViolationException e) {
                         logger.error("Error de integridad al actualizar categoría: {}", e.getMessage());
-                        throw new RuntimeException("Error de integridad de datos al actualizar la categoría");
+                        throw new BusinessException("Error de integridad de datos al actualizar la categoría");
                     }
                 })
-                .orElseThrow(() -> new RuntimeException("Categoría no encontrada con ID: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Categoría no encontrada con ID: " + id));
     }
     
     @Transactional
@@ -79,7 +83,7 @@ public class CategoriaService {
         logger.debug("Eliminando categoría ID: {}", id);
         
         if (!categoriaRepository.existsById(id)) {
-            throw new RuntimeException("Categoría no encontrada con ID: " + id);
+            throw new ResourceNotFoundException("Categoría no encontrada con ID: " + id);
         }
         
         try {
@@ -87,7 +91,7 @@ public class CategoriaService {
             logger.info("Categoría eliminada exitosamente: {}", id);
         } catch (DataIntegrityViolationException e) {
             logger.error("Error de integridad al eliminar categoría: {}", e.getMessage());
-            throw new RuntimeException("No se puede eliminar la categoría porque tiene instrumentos asociados");
+            throw new BusinessException("No se puede eliminar la categoría porque tiene instrumentos asociados");
         }
     }
     

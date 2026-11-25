@@ -4,11 +4,9 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -20,6 +18,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.symphoniac.dto.ApiResponse;
+import com.symphoniac.exception.BusinessException;
+import com.symphoniac.exception.ResourceNotFoundException;
 import com.symphoniac.model.Categoria;
 import com.symphoniac.service.CategoriaService;
 
@@ -27,14 +27,16 @@ import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/categorias")
-@CrossOrigin(originPatterns = {"http://localhost:*", "https://localhost:*"}, allowCredentials = "true")
 @Validated
 public class CategoriaController {
 
     private static final Logger logger = LoggerFactory.getLogger(CategoriaController.class);
 
-    @Autowired
-    private CategoriaService categoriaService;
+    private final CategoriaService categoriaService;
+
+    public CategoriaController(CategoriaService categoriaService) {
+        this.categoriaService = categoriaService;
+    }
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<Categoria>>> getAllCategorias() {
@@ -68,10 +70,10 @@ public class CategoriaController {
             Categoria savedCategoria = categoriaService.save(categoria);
             return ResponseEntity.status(HttpStatus.CREATED)
                 .body(new ApiResponse<>(true, "Categoría creada exitosamente", savedCategoria));
-        } catch (RuntimeException e) {
-            logger.warn("Error de validación al crear categoría: {}", e.getMessage());
+        } catch (BusinessException e) {
+            logger.warn("Error de negocio al crear categoría: {}", e.getMessage());
             return ResponseEntity.badRequest()
-                .body(new ApiResponse<>(false, "Error en la operacion", null));
+                .body(new ApiResponse<>(false, e.getMessage(), null));
         } catch (Exception e) {
             logger.error("Error al crear categoría: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -86,10 +88,14 @@ public class CategoriaController {
         try {
             Categoria updatedCategoria = categoriaService.update(id, categoriaDetails);
             return ResponseEntity.ok(new ApiResponse<>(true, "Categoría actualizada exitosamente", updatedCategoria));
-        } catch (RuntimeException e) {
-            logger.warn("Error de validación al actualizar categoría {}: {}", id, e.getMessage());
+        } catch (ResourceNotFoundException e) {
+            logger.warn("Categoría no encontrada al actualizar {}: {}", id, e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new ApiResponse<>(false, e.getMessage(), null));
+        } catch (BusinessException e) {
+            logger.warn("Error de negocio al actualizar categoría {}: {}", id, e.getMessage());
             return ResponseEntity.badRequest()
-                .body(new ApiResponse<>(false, "Error en la operacion", null));
+                .body(new ApiResponse<>(false, e.getMessage(), null));
         } catch (Exception e) {
             logger.error("Error al actualizar categoría {}: {}", id, e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -102,10 +108,14 @@ public class CategoriaController {
         try {
             categoriaService.deleteById(id);
             return ResponseEntity.ok(new ApiResponse<>(true, "Categoría eliminada exitosamente", null));
-        } catch (RuntimeException e) {
-            logger.warn("Error al eliminar categoría {}: {}", id, e.getMessage());
+        } catch (ResourceNotFoundException e) {
+            logger.warn("Categoría no encontrada al eliminar {}: {}", id, e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new ApiResponse<>(false, e.getMessage(), null));
+        } catch (BusinessException e) {
+            logger.warn("Error de negocio al eliminar categoría {}: {}", id, e.getMessage());
             return ResponseEntity.badRequest()
-                .body(new ApiResponse<>(false, "Error en la operacion", null));
+                .body(new ApiResponse<>(false, e.getMessage(), null));
         } catch (Exception e) {
             logger.error("Error al eliminar categoría {}: {}", id, e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)

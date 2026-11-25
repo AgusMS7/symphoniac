@@ -35,11 +35,21 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(response);
     }
     
-    @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<ApiResponse<Void>> handleRuntimeException(RuntimeException ex) {
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<ApiResponse<Void>> handleResourceNotFound(ResourceNotFoundException ex) {
         ApiResponse<Void> response = new ApiResponse<>(
-                false, 
-                "Error en la operacion", 
+                false,
+                ex.getMessage(),
+                null
+        );
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+    }
+
+    @ExceptionHandler(BusinessException.class)
+    public ResponseEntity<ApiResponse<Void>> handleBusinessException(BusinessException ex) {
+        ApiResponse<Void> response = new ApiResponse<>(
+                false,
+                ex.getMessage(),
                 null
         );
         return ResponseEntity.badRequest().body(response);

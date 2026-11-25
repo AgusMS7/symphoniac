@@ -6,7 +6,6 @@ import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -14,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.symphoniac.dto.InstrumentoDTO;
+import com.symphoniac.exception.ResourceNotFoundException;
 import com.symphoniac.model.Instrumento;
 import com.symphoniac.repository.InstrumentoRepository;
 
@@ -23,11 +23,14 @@ public class InstrumentoService {
 
     private static final Logger logger = LoggerFactory.getLogger(InstrumentoService.class);
 
-    @Autowired
-    private InstrumentoRepository instrumentoRepository;
+    private final InstrumentoRepository instrumentoRepository;
+    private final ProductImageService productImageService;
 
-    @Autowired
-    private ProductImageService productImageService;
+    public InstrumentoService(InstrumentoRepository instrumentoRepository,
+                              ProductImageService productImageService) {
+        this.instrumentoRepository = instrumentoRepository;
+        this.productImageService = productImageService;
+    }
 
     public List<InstrumentoDTO> findAll() {
         try {
@@ -91,7 +94,7 @@ public class InstrumentoService {
             logger.debug("Eliminando instrumento ID: {}", id);
             
             if (!instrumentoRepository.existsById(id)) {
-                throw new RuntimeException("Instrumento no encontrado con ID: " + id);
+                throw new ResourceNotFoundException("Instrumento no encontrado con ID: " + id);
             }
             
             // Eliminar imágenes asociadas

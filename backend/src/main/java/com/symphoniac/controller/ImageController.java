@@ -10,7 +10,7 @@ import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
@@ -29,6 +29,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.symphoniac.dto.ApiResponse;
 import com.symphoniac.dto.ProductImageDTO;
+import com.symphoniac.exception.ResourceNotFoundException;
 import com.symphoniac.service.InstrumentoService;
 import com.symphoniac.service.ProductImageService;
 
@@ -37,16 +38,20 @@ import com.symphoniac.service.ProductImageService;
 public class ImageController {
    
    private static final Logger logger = LoggerFactory.getLogger(ImageController.class);
-   @org.springframework.beans.factory.annotation.Value("${app.upload.dir:public/images}")
-   private String uploadDir;
    private static final long MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
    private static final String[] ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp", ".gif"};
-   
-   @Autowired
-   private ProductImageService productImageService;
-   
-   @Autowired
-   private InstrumentoService instrumentoService;
+
+   private final ProductImageService productImageService;
+   private final InstrumentoService instrumentoService;
+   private final String uploadDir;
+
+   public ImageController(ProductImageService productImageService,
+           InstrumentoService instrumentoService,
+           @Value("${app.upload.dir:public/images}") String uploadDir) {
+       this.productImageService = productImageService;
+       this.instrumentoService = instrumentoService;
+       this.uploadDir = uploadDir;
+   }
    
    @PostMapping("/upload/{instrumentoId}")
    public ResponseEntity<ApiResponse<ProductImageDTO>> uploadImage(
@@ -79,7 +84,9 @@ public class ImageController {
            String uniqueFilename = UUID.randomUUID().toString() + extension;
            
            Path filePath = uploadPath.resolve(uniqueFilename);
-           Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+           try (var inputStream = file.getInputStream()) {
+               Files.copy(inputStream, filePath, StandardCopyOption.REPLACE_EXISTING);
+           }
            
            ProductImageDTO imageDTO = productImageService.createImage(
                instrumentoId, 
@@ -92,14 +99,18 @@ public class ImageController {
            return ResponseEntity.status(HttpStatus.CREATED)
                .body(new ApiResponse<>(true, "Imagen subida exitosamente", imageDTO));
                
+       } catch (ResourceNotFoundException e) {
+           logger.warn("Instrumento no encontrado al subir imagen: {}", e.getMessage());
+           return ResponseEntity.status(HttpStatus.NOT_FOUND)
+               .body(new ApiResponse<>(false, e.getMessage(), null));
        } catch (IOException e) {
            logger.error("Error de E/S al subir imagen: {}", e.getMessage(), e);
            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-               .body(new ApiResponse<>(false, "Error al guardar la imagen: ", null));
+               .body(new ApiResponse<>(false, "Error al guardar la imagen", null));
        } catch (Exception e) {
            logger.error("Error al subir imagen: {}", e.getMessage(), e);
            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-               .body(new ApiResponse<>(false, "Error interno: ", null));
+               .body(new ApiResponse<>(false, "Error interno del servidor", null));
        }
    }
    
@@ -124,7 +135,7 @@ public class ImageController {
                
        } catch (Exception e) {
            logger.error("Error al obtener imagen {}: {}", filename, e.getMessage(), e);
-           return ResponseEntity.notFound().build();
+           return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
        }
    }
    
@@ -162,10 +173,10 @@ public class ImageController {
        try {
            ProductImageDTO updatedImage = productImageService.setPrimaryImage(imageId);
            return ResponseEntity.ok(new ApiResponse<>(true, "Imagen establecida como principal", updatedImage));
-       } catch (RuntimeException e) {
-           logger.warn("Error al establecer imagen principal {}: {}", imageId, e.getMessage());
+       } catch (ResourceNotFoundException e) {
+           logger.warn("Imagen no encontrada al establecer principal {}: {}", imageId, e.getMessage());
            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-               .body(new ApiResponse<>(false, "Error en la operacion", null));
+               .body(new ApiResponse<>(false, e.getMessage(), null));
        } catch (Exception e) {
            logger.error("Error al establecer imagen principal {}: {}", imageId, e.getMessage(), e);
            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -178,10 +189,10 @@ public class ImageController {
        try {
            productImageService.deleteImage(imageId);
            return ResponseEntity.ok(new ApiResponse<>(true, "Imagen eliminada exitosamente", null));
-       } catch (RuntimeException e) {
-           logger.warn("Error al eliminar imagen {}: {}", imageId, e.getMessage());
+       } catch (ResourceNotFoundException e) {
+           logger.warn("Imagen no encontrada al eliminar {}: {}", imageId, e.getMessage());
            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-               .body(new ApiResponse<>(false, "Error en la operacion", null));
+               .body(new ApiResponse<>(false, e.getMessage(), null));
        } catch (Exception e) {
            logger.error("Error al eliminar imagen {}: {}", imageId, e.getMessage(), e);
            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
