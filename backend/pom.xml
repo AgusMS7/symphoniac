@@ -9,11 +9,11 @@
        <relativePath/>
    </parent>
    
-   <groupId>com.instrumentos</groupId>
-   <artifactId>sandoval-backend</artifactId>
+   <groupId>com.symphoniac</groupId>
+   <artifactId>symphoniac-backend</artifactId>
    <version>0.0.1-SNAPSHOT</version>
-   <name>instrumentos-sandoval-backend</name>
-   <description>Backend para tienda de instrumentos musicales Sandoval</description>
+   <name>symphoniac-backend</name>
+   <description>Backend para tienda de instrumentos musicales Symphoniac</description>
    
    <properties>
        <java.version>17</java.version>

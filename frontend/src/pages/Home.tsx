@@ -129,7 +129,7 @@ export const Home = () => {
               className="slider"
               style={{ transform: `translateX(-${currentSlide * 100}%)` }}
             >
-              {destacados.map((instrumento, index) => (
+              {destacados.map((instrumento) => (
                 <div
                   key={instrumento.id}
                   className="slide"

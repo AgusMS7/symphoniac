@@ -9,7 +9,7 @@ Monorepo con el frontend (React + Vite) y el backend (Spring Boot + PostgreSQL).
 
 | Capa | Tecnología |
 |---|---|
-| Frontend | React 18, TypeScript 5, Vite 5, React Router 6 |
+| Frontend | React 19, TypeScript 5.9, Vite 7, React Router 6 |
 | Backend | Java 17, Spring Boot 3.5, Spring Data JPA, Bean Validation |
 | Base de datos | PostgreSQL |
 | Build | npm / Maven (wrapper incluido) |
@@ -19,31 +19,37 @@ Monorepo con el frontend (React + Vite) y el backend (Spring Boot + PostgreSQL).
 ```
 symphoniac/
   frontend/   Aplicación React (Vite). Páginas: catálogo, detalle, admin, ubicación.
-  backend/    API REST Spring Boot + scripts SQL en backend/scripts/.
+   backend/    API REST Spring Boot + SQL reproducible en backend/db/.
   docker-compose.yml   PostgreSQL local.
 ```
 
 ## Requisitos
 
-- Node.js 18+
+- Node.js `^20.19.0 || >=22.12.0` (requisito de Vite 7)
 - Java 17+
 - PostgreSQL 14+ (o Docker)
 
 ## Cómo correrlo
 
-1. **Base de datos** (opcional con Docker):
+1. **Base de datos**:
+
+   Con Docker (recomendado), `docker compose up -d` crea la base `symphoniac` y
+   aplica `backend/db/schema.sql` + `backend/db/seed.sql` como init:
 
    ```bash
    docker compose up -d
    ```
 
-   Luego aplicá el esquema y los datos de ejemplo:
+   No corras `psql` después en ese camino: `schema.sql` no usa `IF NOT EXISTS` y
+   volver a aplicarlo fallaría con "relation already exists".
+
+   Con un PostgreSQL local **sin** init automático, creá la base y aplicá el
+   esquema y los datos una sola vez:
 
    ```bash
-   psql -h localhost -U postgres -d instrumentosdb -f backend/scripts/02-crear-tablas.sql
-   psql -h localhost -U postgres -d instrumentosdb -f backend/scripts/03-insertar-datos-json.sql
-   psql -h localhost -U postgres -d instrumentosdb -f backend/scripts/06-crear-tablas-pedidos.sql
-   psql -h localhost -U postgres -d instrumentosdb -f backend/scripts/07-datos-prueba-pedidos.sql
+   createdb -h localhost -U postgres symphoniac
+   psql -h localhost -U postgres -d symphoniac -f backend/db/schema.sql
+   psql -h localhost -U postgres -d symphoniac -f backend/db/seed.sql
    ```
 
 2. **Backend** (puerto 3001):

@@ -29,7 +29,7 @@ export const instrumentoService = {
   },
 
   // Crear nuevo instrumento
-  create: async (instrumento: any) => {
+  create: async (instrumento: unknown) => {
     const response = await fetch(`${API_BASE_URL}/instrumentos`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -41,7 +41,7 @@ export const instrumentoService = {
   },
 
   // Actualizar instrumento
-  update: async (id: number, instrumento: any) => {
+  update: async (id: number, instrumento: unknown) => {
     const response = await fetch(`${API_BASE_URL}/instrumentos/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },

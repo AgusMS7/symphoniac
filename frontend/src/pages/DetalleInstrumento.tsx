@@ -24,11 +24,12 @@ export const DetalleInstrumento: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [imageError, setImageError] = useState(false);
 
-  useEffect(() => {
-    if (id) {
-      fetchInstrumento(Number(id));
-    }
-  }, [id]);
+   useEffect(() => {
+     if (id) {
+       fetchInstrumento(Number(id));
+     }
+   // eslint-disable-next-line react-hooks/exhaustive-deps
+   }, [id]);
 
   const fetchInstrumento = async (instrumentoId: number) => {
     try {
