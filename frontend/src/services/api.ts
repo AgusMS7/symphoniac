@@ -1,4 +1,4 @@
-const API_BASE_URL = "http://localhost:3001/api";
+const API_BASE_URL = "/api";
 
 // Servicio para instrumentos
 export const instrumentoService = {
@@ -216,6 +216,6 @@ export const imageService = {
 
   // Obtener URL de imagen
   getImageUrl: (filename: string) => {
-    return `http://localhost:3001/images/${filename}`;
+    return `/images/${filename}`;
   },
 };
