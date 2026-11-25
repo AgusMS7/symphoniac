@@ -1,10 +1,10 @@
-package com.symphoniac.instrumentos_back_spring;
+package com.symphoniac;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class InstrumentosBackSpringApplicationTests {
+class SymphoniacBackendApplicationTests {
 
 	@Test
 	void contextLoads() {

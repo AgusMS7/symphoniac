@@ -4,10 +4,10 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class InstrumentosSandovalApplication {
+public class SymphoniacApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(InstrumentosSandovalApplication.class, args);
+        SpringApplication.run(SymphoniacApplication.class, args);
         System.out.println("🚀 Servidor Spring Boot iniciado en http://localhost:3001");
         System.out.println("📊 API disponible en http://localhost:3001/api/instrumentos");
         System.out.println("🖼️ Imágenes disponibles en http://localhost:3001/images/");
