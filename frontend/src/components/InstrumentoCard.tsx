@@ -18,18 +18,16 @@ export const InstrumentoCard = ({ instrumento }: InstrumentoCardProps) => {
   const navigate = useNavigate();
   const [imageError, setImageError] = useState(false);
   const [primaryImage, setPrimaryImage] = useState<ProductImage | null>(null);
-  const [loadingImage, setLoadingImage] = useState(true);
 
   useEffect(() => {
     loadPrimaryImage();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [instrumento.id]);
 
   const loadPrimaryImage = async () => {
-    setLoadingImage(true);
     await loadPrimaryImageSafely(
       instrumento.id,
       (image) => setPrimaryImage(image),
-      () => setLoadingImage(false),
     );
   };
 

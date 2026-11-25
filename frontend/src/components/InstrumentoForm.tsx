@@ -8,7 +8,7 @@ import "./InstrumentoForm.css";
 interface InstrumentoFormProps {
   instrumento?: Instrumento | null;
   categorias: Categoria[];
-  onSubmit: (data: any) => Promise<any>;
+  onSubmit: (data: unknown) => Promise<unknown>;
   onCancel: () => void;
 }
 
@@ -66,6 +66,7 @@ export const InstrumentoForm = ({
       // Configurar preview de imagen - priorizar imagen principal del nuevo sistema
       loadImagePreview(instrumento.id);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [instrumento]);
 
   const loadImagePreview = async (instrumentoId: number) => {

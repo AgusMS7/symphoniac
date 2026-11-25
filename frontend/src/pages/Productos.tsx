@@ -94,6 +94,7 @@ export const Productos = () => {
   useEffect(() => {
     aplicarFiltros();
     setPaginaActual(1); // Resetear a primera página cuando cambian los filtros
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [instrumentos, categoriaSeleccionada, busqueda, ordenamiento]);
 
   const aplicarFiltros = () => {
