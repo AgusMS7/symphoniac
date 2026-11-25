@@ -5,7 +5,7 @@ panel de administración. React 19 + Vite 7 + TypeScript 5.9.
 
 ## Requisitos
 
-- Node.js 18+
+- Node.js `^20.19.0 || >=22.12.0` (requisito de Vite 7)
 
 ## Comandos
 

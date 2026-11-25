@@ -25,7 +25,7 @@ symphoniac/
 
 ## Requisitos
 
-- Node.js 18+
+- Node.js `^20.19.0 || >=22.12.0` (requisito de Vite 7)
 - Java 17+
 - PostgreSQL 14+ (o Docker)
 
