@@ -32,7 +32,7 @@ Una API REST completa desarrollada con **Spring Boot 3** para la gestión integr
 
 ### Prerrequisitos
 
-\`\`\`bash
+```bash
 # Verificar Java
 java -version  # Debe ser 17 o superior
 
@@ -41,67 +41,71 @@ mvn -version   # Debe ser 3.6 o superior
 
 # Verificar PostgreSQL
 psql --version # Debe ser 12 o superior
-\`\`\`
+```
 
 ### 1. Configurar Base de Datos
 
-\`\`\`bash
-# Crear base de datos
-psql -U postgres -f scripts/01-crear-bd.sql
+El esquema y los datos reproducibles están en `backend/db/schema.sql` y
+`backend/db/seed.sql`, sobre la base `symphoniac`.
 
-# Crear tablas principales
-psql -U postgres -d symphoniac -f scripts/02-crear-tablas.sql
+**Con Docker** (recomendado): desde la raíz del monorepo,
 
-# Insertar datos iniciales
-psql -U postgres -d symphoniac -f scripts/03-insertar-datos-json.sql
-psql -U postgres -d symphoniac -f scripts/04-datos-adicionales.sql
+```bash
+docker compose up -d
+```
 
-# Crear tablas de pedidos
-psql -U postgres -d symphoniac -f scripts/09-datos-prueba-pedidos-final.sql
+`docker compose` crea la base `symphoniac` y aplica `backend/db/*.sql` como init.
+No hace falta ejecutar `psql` después: `schema.sql` no usa `IF NOT EXISTS` y
+volver a aplicarlo fallaría con "relation already exists".
 
-# Verificar instalación
-psql -U postgres -d symphoniac -f scripts/10-verificar-todo.sql
-\`\`\`
+**Con un PostgreSQL local sin init automático**:
+
+```bash
+createdb -h 127.0.0.1 -U postgres symphoniac
+psql -h 127.0.0.1 -U postgres -d symphoniac -f backend/db/schema.sql
+psql -h 127.0.0.1 -U postgres -d symphoniac -f backend/db/seed.sql
+```
+
+Los scripts históricos 01-08 se conservan en `backend/scripts/legacy/` solo como
+referencia (no son setup); ver `backend/scripts/legacy/README.md`. Los scripts 09
+y 10 no existen.
 
 ### 2. Configurar Aplicación
 
-\`\`\`bash
-# Clonar repositorio
+```bash
 git clone <url-del-repositorio>
-cd instrumentos-back-spring
+# desde la raíz del repositorio clonado
+cd backend
+```
 
-# Configurar application.properties
-# Las credenciales por defecto son:
-# - Usuario: postgres
-# - Contraseña: postgres (cambiar según tu configuración)
-# - Puerto: 5432
-# - Base de datos: symphoniac
-# - Puerto del servidor: 3001
-\`\`\`
+La conexión y el resto de la configuración se toman de variables de entorno
+(ver `backend/.env.example`): `DB_URL`, `DB_USER`, `DB_PASSWORD`, `PORT`,
+`CORS_ALLOWED_ORIGINS` y `UPLOAD_DIR`. No se versionan valores reales.
 
 ### 3. Compilar y Ejecutar
 
-\`\`\`bash
-# Compilar proyecto
-mvn clean compile
+```bash
+# Compilar
+./mvnw clean package
 
-# Ejecutar aplicación
-mvn spring-boot:run
+# Ejecutar
+./mvnw spring-boot:run
 
-# O ejecutar JAR compilado
-mvn clean package
-java -jar target/instrumentos-back-spring-1.0.0.jar
-\`\`\`
+# O ejecutar el JAR compilado
+java -jar target/symphoniac-backend-0.0.1-SNAPSHOT.jar
+```
+
+En Windows usar `.\mvnw.cmd` en lugar de `./mvnw`.
 
 ### 4. Verificar Funcionamiento
 
-\`\`\`bash
+```bash
 # Probar endpoint básico
 curl http://localhost:3001/api/instrumentos
 
 # Ejecutar tests completos
-bash test-api-completo.sh
-\`\`\`
+bash test-api.sh
+```
 
 ## 📡 Endpoints de la API
 
@@ -380,7 +384,7 @@ CREATE TABLE product_images (
 ### Ejecutar Tests Automatizados
 \`\`\`bash
 # Ejecutar script de testing completo
-bash test-api-completo.sh
+bash test-api.sh
 
 # Tests incluidos:
 # ✅ CRUD de categorías (5 tests)
@@ -401,99 +405,76 @@ bash test-api-completo.sh
 - **Manejo de errores**: Tests de códigos HTTP apropiados
 - **Limpieza**: Eliminación automática de datos de prueba
 
-## 📁 Estructura del Proyecto
+## Estructura del Proyecto
 
-\`\`\`
-src/
-├── main/
-│   ├── java/com/symphoniac/
-│   │   ├── config/          # Configuraciones (CORS, Web)
-│   │   │   └── WebConfig.java
-│   │   ├── controller/      # Controladores REST
-│   │   │   ├── CategoriaController.java
-│   │   │   ├── InstrumentoController.java
-│   │   │   ├── PedidoController.java
-│   │   │   ├── ImageController.java
-│   │   │   └── HomeController.java
-│   │   ├── dto/            # Data Transfer Objects
-│   │   │   ├── InstrumentoDTO.java
-│   │   │   ├── PedidoDTO.java
-│   │   │   ├── PedidoDetalleDTO.java
-│   │   │   ├── CrearPedidoRequest.java
-│   │   │   ├── ItemCarritoDTO.java
-│   │   │   ├── ProductImageDTO.java
-│   │   │   └── ApiResponse.java
-│   │   ├── exception/      # Manejo de excepciones
-│   │   │   └── GlobalExceptionHandler.java
-│   │   ├── model/          # Entidades JPA
-│   │   │   ├── Instrumento.java
-│   │   │   ├── Categoria.java
-│   │   │   ├── Pedido.java
-│   │   │   ├── PedidoDetalle.java
-│   │   │   └── ProductImage.java
-│   │   ├── repository/     # Repositorios JPA
-│   │   │   ├── InstrumentoRepository.java
-│   │   │   ├── CategoriaRepository.java
-│   │   │   ├── PedidoRepository.java
-│   │   │   ├── PedidoDetalleRepository.java
-│   │   │   └── ProductImageRepository.java
-│   │   ├── service/        # Lógica de negocio
-│   │   │   ├── InstrumentoService.java
-│   │   │   ├── CategoriaService.java
-│   │   │   ├── PedidoService.java
-│   │   │   └── ProductImageService.java
-│   │   └── InstrumentosSandovalApplication.java
-│   └── resources/
-│       ├── application.properties
-│       └── static/images/  # Directorio de imágenes
-├── test/                   # Tests unitarios
-├── scripts/               # Scripts SQL
-│   ├── 01-crear-bd.sql
-│   ├── 02-crear-tablas.sql
-│   ├── 03-insertar-datos-json.sql
-│   ├── 04-datos-adicionales.sql
-│   ├── 05-verificar-datos.sql
-│   ├── 09-datos-prueba-pedidos-final.sql
-│   └── 10-verificar-todo.sql
-├── public/images/         # Directorio público de imágenes
-├── test-api-completo.sh   # Script de testing completo
-└── target/               # Archivos compilados
-\`\`\`
+```
+backend/
+|-- src/
+|   |-- main/
+|   |   |-- java/com/symphoniac/
+|   |   |   |-- SymphoniacApplication.java
+|   |   |   |-- config/WebConfig.java
+|   |   |   |-- controller/   (5 controllers REST)
+|   |   |   |-- dto/          (7 DTOs)
+|   |   |   |-- exception/GlobalExceptionHandler.java
+|   |   |   |-- model/        (5 entidades JPA)
+|   |   |   |-- repository/   (5 repositorios)
+|   |   |   `-- service/      (4 servicios)
+|   |   `-- resources/application.properties
+|   `-- test/java/com/symphoniac/SymphoniacBackendApplicationTests.java
+|-- db/
+|   |-- schema.sql
+|   `-- seed.sql
+|-- scripts/legacy/           # scripts SQL historicos 01-08 (no setup)
+|-- public/images/            # uploads en runtime (UPLOAD_DIR)
+`-- test-api.sh               # smoke test manual
+```
 
 ## 🔧 Configuración
 
 ### application.properties
-\`\`\`properties
-# Base de datos PostgreSQL
-spring.datasource.url=jdbc:postgresql://localhost:5432/symphoniac
-spring.datasource.username=postgres
-spring.datasource.password=postgres
+
+```properties
+spring.application.name=symphoniac-backend
+
+# Servidor
+server.port=${PORT:3001}
+
+# PostgreSQL
+spring.datasource.url=${DB_URL:jdbc:postgresql://127.0.0.1:5432/symphoniac}
+spring.datasource.username=${DB_USER:postgres}
+spring.datasource.password=${DB_PASSWORD:}
 spring.datasource.driver-class-name=org.postgresql.Driver
 
+# Pool Hikari
+spring.datasource.hikari.minimum-idle=0
+spring.datasource.hikari.idle-timeout=60000
+
 # JPA/Hibernate
-spring.jpa.hibernate.ddl-auto=update
+spring.jpa.hibernate.ddl-auto=validate
 spring.jpa.show-sql=true
 spring.jpa.properties.hibernate.format_sql=true
 spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
+spring.jpa.open-in-view=false
 
-# Servidor - Puerto 3001
-server.port=3001
+# Uploads
+app.upload.dir=${UPLOAD_DIR:public/images}
+spring.web.resources.static-locations=file:${app.upload.dir}/,classpath:/static/
+
+# CORS (origenes permitidos separados por coma)
+cors.allowed-origins=${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:5173,http://127.0.0.1:3000,http://127.0.0.1:5173}
 
 # Logging
-logging.level.com.instrumentos=DEBUG
+logging.level.com.symphoniac=DEBUG
 logging.level.org.springframework.web=DEBUG
-
-# Archivos
-spring.servlet.multipart.max-file-size=10MB
-spring.servlet.multipart.max-request-size=10MB
-\`\`\`
+```
 
 ## 🚨 Notas Importantes
 
 1. **Puerto del servidor**: La aplicación corre en el puerto **3001** para evitar conflictos
 2. **Base de datos**: Requiere PostgreSQL con la base de datos `symphoniac`
-3. **Imágenes**: Se almacenan en `public/images/` y `src/main/resources/static/images/`
-4. **CORS**: Configurado para permitir localhost en cualquier puerto
+3. **Imágenes**: Se sirven desde el directorio de uploads configurable (`UPLOAD_DIR`, por defecto `public/images/`)
+4. **CORS**: Orígenes configurables con `CORS_ALLOWED_ORIGINS` (separados por coma); por defecto `localhost:3000` y `localhost:5173`
 5. **Paginación**: Solo disponible para instrumentos con el parámetro `paginated=true`
 6. **Validaciones**: Todos los endpoints validan datos de entrada
 7. **Transacciones**: Los pedidos se crean de forma transaccional
