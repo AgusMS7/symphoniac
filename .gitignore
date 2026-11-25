@@ -1,0 +1,30 @@
+# Dependencias
+node_modules/
+
+# Variables de entorno (nunca versionar valores reales)
+.env
+.env.*
+!.env.example
+
+# Java / Maven
+target/
+*.class
+
+# Build del frontend
+dist/
+dist-ssr/
+build/
+
+# Imágenes subidas en runtime (las semilla nro*.jpg sí se versionan)
+backend/public/images/*
+!backend/public/images/nro*.jpg
+
+# Logs
+*.log
+npm-debug.log*
+
+# Editores / sistema operativo
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

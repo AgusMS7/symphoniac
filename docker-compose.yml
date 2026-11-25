@@ -1,0 +1,15 @@
+services:
+  db:
+    image: postgres:16
+    container_name: symphoniac-db
+    environment:
+      POSTGRES_DB: instrumentosdb
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+    ports:
+      - "5432:5432"
+    volumes:
+      - symphoniac_pgdata:/var/lib/postgresql/data
+
+volumes:
+  symphoniac_pgdata:
