@@ -31,7 +31,7 @@ public class WebConfig implements WebMvcConfigurer {
     public void addResourceHandlers(@NonNull ResourceHandlerRegistry registry) {
         // Servir uploads desde el directorio configurable
         registry.addResourceHandler("/images/**")
-                .addResourceLocations("file:" + uploadDir + "/")
+                .addResourceLocations("file:" + uploadDir + "/", "classpath:/static/images/")
                 .setCachePeriod(3600);
 
         registry.addResourceHandler("/static/**")

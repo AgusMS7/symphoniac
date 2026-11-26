@@ -1,16 +1,52 @@
 services:
   db:
-    image: postgres:16
-    container_name: symphoniac-db
+    image: postgres:17
     environment:
       POSTGRES_DB: symphoniac
       POSTGRES_USER: ${DB_USER:-postgres}
       POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
-    ports:
-      - "5432:5432"
     volumes:
-      - symphoniac_pgdata:/var/lib/postgresql/data
-      - ./backend/db:/docker-entrypoint-initdb.d
+      - pgdata:/var/lib/postgresql/data
+      - ./backend/db:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U ${DB_USER:-postgres} -d symphoniac"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  backend:
+    build: ./backend
+    environment:
+      DB_URL: jdbc:postgresql://db:5432/symphoniac
+      DB_USER: ${DB_USER:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-postgres}
+      PORT: 3001
+      UPLOAD_DIR: /app/uploads
+      CORS_ALLOWED_ORIGINS: http://localhost:${FRONT_PORT:-8081}
+    volumes:
+      - uploads:/app/uploads
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3001/api/instrumentos >/dev/null || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_API_URL: /api
+        VITE_IMAGES_URL: /images
+    ports:
+      - "${FRONT_PORT:-8081}:8080"
+    depends_on:
+      backend:
+        condition: service_healthy
 
 volumes:
-  symphoniac_pgdata:
+  pgdata:
+  uploads:

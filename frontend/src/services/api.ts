@@ -1,4 +1,5 @@
-const API_BASE_URL = "/api";
+const API_BASE_URL = import.meta.env.VITE_API_URL ?? "/api";
+const IMAGES_BASE_URL = import.meta.env.VITE_IMAGES_URL ?? "/images";
 
 // Servicio para instrumentos
 export const instrumentoService = {
@@ -216,6 +217,6 @@ export const imageService = {
 
   // Obtener URL de imagen
   getImageUrl: (filename: string) => {
-    return `/images/${filename}`;
+    return `${IMAGES_BASE_URL}/${filename}`;
   },
 };
