@@ -30,7 +30,7 @@ const REFRESH_INTERVAL_MS = 15_000
 
 let baseInFlight: Promise<CatalogBase> | null = null
 let refreshInFlight: Promise<void> | null = null
-let lastRefreshAt = 0
+let lastAttemptAt = 0
 
 interface InstrumentoPayload {
   instrumento?: string
@@ -86,8 +86,9 @@ function loadBase(): Promise<CatalogBase> {
 
 function refreshInBackground(): void {
   if (refreshInFlight) return
-  if (Date.now() - lastRefreshAt < REFRESH_INTERVAL_MS) return
+  if (Date.now() - lastAttemptAt < REFRESH_INTERVAL_MS) return
 
+  lastAttemptAt = Date.now()
   refreshInFlight = (async () => {
     try {
       const base = await fetchBaseFromRemote()
@@ -96,7 +97,6 @@ function refreshInBackground(): void {
         !previous || JSON.stringify(previous) !== JSON.stringify(base)
 
       writeCache(base)
-      lastRefreshAt = Date.now()
 
       if (changed) emitCatalogUpdated()
     } catch (error) {
@@ -117,7 +117,7 @@ async function getBase(): Promise<CatalogBase> {
 
   const base = await loadBase()
   writeCache(base)
-  lastRefreshAt = Date.now()
+  lastAttemptAt = Date.now()
   return base
 }
 
