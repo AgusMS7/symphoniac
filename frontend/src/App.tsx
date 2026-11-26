@@ -1,13 +1,13 @@
 import type React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { Navbar } from "./components/Navbar";
+import { AppShell } from "./components/layout/app-shell";
 import { ScrollToTop } from "./components/ScrollToTop";
+import { Toaster } from "./components/ui/sonner";
 import { Home } from "./pages/Home";
 import { Productos } from "./pages/Productos";
 import { DetalleInstrumento } from "./pages/DetalleInstrumento";
 import { DondeEstamos } from "./pages/DondeEstamos";
 import { Admin } from "./pages/Admin";
-import "./App.css";
 
 const App: React.FC = () => {
   return (
@@ -17,19 +17,17 @@ const App: React.FC = () => {
         v7_relativeSplatPath: true,
       }}
     >
-      <div className="app-container">
-        <ScrollToTop />
-        <Navbar />
-        <main className="app-main">
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/productos" element={<Productos />} />
-            <Route path="/instrumento/:id" element={<DetalleInstrumento />} />
-            <Route path="/donde-estamos" element={<DondeEstamos />} />
-            <Route path="/admin" element={<Admin />} />
-          </Routes>
-        </main>
-      </div>
+      <ScrollToTop />
+      <AppShell>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/productos" element={<Productos />} />
+          <Route path="/instrumento/:id" element={<DetalleInstrumento />} />
+          <Route path="/donde-estamos" element={<DondeEstamos />} />
+          <Route path="/admin" element={<Admin />} />
+        </Routes>
+      </AppShell>
+      <Toaster />
     </Router>
   );
 };

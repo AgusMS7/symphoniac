@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { Link } from "react-router-dom"
+import { Link, useLocation } from "react-router-dom"
 import { CircleHelp, Heart, Menu, ShoppingCart } from "lucide-react"
 
 import { cn } from "@/lib/utils"
@@ -22,10 +22,18 @@ const links = [
   { href: "/", label: "Inicio" },
   { href: "/productos", label: "Productos" },
   { href: "/donde-estamos", label: "Donde estamos" },
+  { href: "/admin", label: "Administración" },
 ]
 
 const focusRing =
   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+
+function isActive(pathname: string, href: string) {
+  if (href === "/") return pathname === "/"
+  if (href === "/productos")
+    return pathname === "/productos" || pathname.startsWith("/instrumento")
+  return pathname.startsWith(href)
+}
 
 function DemoChip() {
   return (
@@ -99,36 +107,49 @@ function ActionIcons() {
 
 export function Navbar() {
   const [open, setOpen] = useState(false)
+  const { pathname } = useLocation()
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-3 px-4">
         <Link
           to="/"
+          aria-label="Symphoniac, ir al inicio"
           className={cn(
-            "font-display text-lg font-bold tracking-tight text-primary",
+            "flex items-center gap-2 font-display text-lg font-bold tracking-tight text-primary",
             focusRing,
           )}
         >
-          Symphoniac
+          <img
+            src="/icons/logo.svg"
+            alt=""
+            aria-hidden="true"
+            className="size-6"
+          />
+          <span>Symphoniac</span>
         </Link>
 
         <nav
           aria-label="Navegación principal"
           className="hidden items-center gap-1 md:flex"
         >
-          {links.map((link) => (
-            <Link
-              key={link.href}
-              to={link.href}
-              className={cn(
-                "rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
-                focusRing,
-              )}
-            >
-              {link.label}
-            </Link>
-          ))}
+          {links.map((link) => {
+            const active = isActive(pathname, link.href)
+            return (
+              <Link
+                key={link.href}
+                to={link.href}
+                aria-current={active ? "page" : undefined}
+                className={cn(
+                  "rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-muted hover:text-foreground",
+                  active ? "bg-muted text-foreground" : "text-muted-foreground",
+                  focusRing,
+                )}
+              >
+                {link.label}
+              </Link>
+            )
+          })}
         </nav>
 
         <div className="flex items-center gap-1.5">
@@ -153,19 +174,26 @@ export function Navbar() {
                 aria-label="Navegación móvil"
                 className="mt-6 flex flex-col gap-1"
               >
-                {links.map((link) => (
-                  <SheetClose asChild key={link.href}>
-                    <Link
-                      to={link.href}
-                      className={cn(
-                        "rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground",
-                        focusRing,
-                      )}
-                    >
-                      {link.label}
-                    </Link>
-                  </SheetClose>
-                ))}
+                {links.map((link) => {
+                  const active = isActive(pathname, link.href)
+                  return (
+                    <SheetClose asChild key={link.href}>
+                      <Link
+                        to={link.href}
+                        aria-current={active ? "page" : undefined}
+                        className={cn(
+                          "rounded-md px-3 py-2 text-sm font-medium hover:bg-muted hover:text-foreground",
+                          active
+                            ? "bg-muted text-foreground"
+                            : "text-muted-foreground",
+                          focusRing,
+                        )}
+                      >
+                        {link.label}
+                      </Link>
+                    </SheetClose>
+                  )
+                })}
               </nav>
               <div className="mt-6 border-t border-border pt-4 sm:hidden">
                 <ActionIcons />

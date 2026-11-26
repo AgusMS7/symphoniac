@@ -1,4 +1,13 @@
 import type React from "react"
+
+import { Label } from "@/components/ui/label"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import type { Categoria } from "../types/Categoria"
 
 interface FiltroCategoriaProps {
@@ -8,6 +17,8 @@ interface FiltroCategoriaProps {
   loading?: boolean
 }
 
+const ALL = "all"
+
 export const FiltroCategoria: React.FC<FiltroCategoriaProps> = ({
   categorias,
   categoriaSeleccionada,
@@ -15,22 +26,27 @@ export const FiltroCategoria: React.FC<FiltroCategoriaProps> = ({
   loading = false,
 }) => {
   return (
-    <div className="filtro-categoria">
-      <label htmlFor="categoria-select">Filtrar por categoría:</label>
-      <select
-        id="categoria-select"
-        value={categoriaSeleccionada}
-        onChange={(e) => onCategoriaChange(e.target.value)}
+    <div className="flex flex-col gap-1.5">
+      <Label htmlFor="categoria-select">Filtrar por categoría</Label>
+      <Select
+        value={categoriaSeleccionada || ALL}
+        onValueChange={(value) =>
+          onCategoriaChange(value === ALL ? "" : value)
+        }
         disabled={loading}
-        className="filter-select"
       >
-        <option value="">Todas las categorías</option>
-        {categorias.map((categoria) => (
-          <option key={categoria.id} value={categoria.id.toString()}>
-            {categoria.denominacion}
-          </option>
-        ))}
-      </select>
+        <SelectTrigger id="categoria-select" className="w-full sm:w-56">
+          <SelectValue placeholder="Todas las categorías" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value={ALL}>Todas las categorías</SelectItem>
+          {categorias.map((categoria) => (
+            <SelectItem key={categoria.id} value={categoria.id.toString()}>
+              {categoria.denominacion}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
     </div>
   )
 }

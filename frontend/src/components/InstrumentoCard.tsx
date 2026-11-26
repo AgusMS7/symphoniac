@@ -1,117 +1,134 @@
-import type React from "react";
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import type { Instrumento, ProductImage } from "../types/Instrumento";
+import type React from "react"
+import { useEffect, useState } from "react"
+import { Link, useNavigate } from "react-router-dom"
+import { Heart, ShoppingCart, Truck } from "lucide-react"
+
+import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
+import type { Instrumento, ProductImage } from "../types/Instrumento"
 import {
-  loadPrimaryImageSafely,
+  getImageAltText,
   getImageUrl,
   handleImageError,
-  getImageAltText,
-} from "../utils/imageUtils";
-import "./InstrumentoCard.css";
+  loadPrimaryImageSafely,
+} from "../utils/imageUtils"
 
 interface InstrumentoCardProps {
-  instrumento: Instrumento;
+  instrumento: Instrumento
 }
 
+const stopPropagation = (event: React.MouseEvent) => event.stopPropagation()
+
 export const InstrumentoCard = ({ instrumento }: InstrumentoCardProps) => {
-  const navigate = useNavigate();
-  const [imageError, setImageError] = useState(false);
-  const [primaryImage, setPrimaryImage] = useState<ProductImage | null>(null);
+  const navigate = useNavigate()
+  const [imageError, setImageError] = useState(false)
+  const [primaryImage, setPrimaryImage] = useState<ProductImage | null>(null)
 
   useEffect(() => {
-    loadPrimaryImage();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [instrumento.id]);
-
-  const loadPrimaryImage = async () => {
-    await loadPrimaryImageSafely(
-      instrumento.id,
-      (image) => setPrimaryImage(image),
-    );
-  };
+    let active = true
+    loadPrimaryImageSafely(instrumento.id, (image) => {
+      if (active) setPrimaryImage(image)
+    })
+    return () => {
+      active = false
+    }
+  }, [instrumento.id])
 
   const formatearPrecio = (precio: number) => {
-    return `$${precio.toLocaleString("es-AR")}`;
-  };
+    return `$${precio.toLocaleString("es-AR")}`
+  }
 
-  const formatearEnvio = (costoEnvio: string) => {
+  const renderEnvio = (costoEnvio: string) => {
     if (costoEnvio === "G") {
       return (
-        <div className="envio-gratis">
-          <img
-            src="/icons/truck.svg"
-            alt="Envío gratis"
-            className="camion-icon"
-          />
-          <span>Envío gratis a todo el país</span>
-        </div>
-      );
+        <span className="flex items-center gap-1.5 text-success">
+          <Truck className="size-4" aria-hidden="true" />
+          Envío gratis a todo el país
+        </span>
+      )
     }
     if (costoEnvio === "P") {
-      return <span className="envio-pago">Envío con costo</span>;
+      return <span>Envío con costo</span>
     }
-    return <span className="envio-pago">Envío: ${costoEnvio}</span>;
-  };
+    return <span>Envío: ${costoEnvio}</span>
+  }
 
   const imageSrc = imageError
     ? "/icons/no-image.svg"
-    : getImageUrl(primaryImage, instrumento.imagen);
-  const imageAlt = getImageAltText(primaryImage, instrumento.instrumento);
+    : getImageUrl(primaryImage, instrumento.imagen)
+  const imageAlt = getImageAltText(primaryImage, instrumento.instrumento)
 
   const handleCardClick = () => {
-    navigate(`/instrumento/${instrumento.id}`);
-  };
-
-  const handleButtonClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    navigate(`/instrumento/${instrumento.id}`);
-  };
+    navigate(`/instrumento/${instrumento.id}`)
+  }
 
   const handleImageLoadError = () => {
-    setImageError(true);
-  };
+    setImageError(true)
+  }
 
   return (
-    <div className="instrumento-card" onClick={handleCardClick}>
-      <div className="imagen-container">
+    <Card
+      onClick={handleCardClick}
+      className="group cursor-pointer gap-0 overflow-hidden py-0 transition-colors hover:ring-primary/40"
+    >
+      <div className="aspect-[4/3] overflow-hidden bg-muted">
         <img
           src={imageSrc}
           alt={imageAlt}
-          className="instrumento-imagen"
-          onError={(e) => {
-            handleImageError(e, instrumento.id);
-            handleImageLoadError();
+          className="size-full object-cover transition-transform duration-300 group-hover:scale-[1.03] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
+          onError={(event) => {
+            handleImageError(event, instrumento.id)
+            handleImageLoadError()
           }}
         />
       </div>
 
-      <div className="instrumento-info">
-        <h3 className="instrumento-titulo">{instrumento.instrumento}</h3>
+      <CardContent className="flex flex-col gap-1.5 p-4">
+        <h3 className="line-clamp-2 font-display text-base font-semibold text-foreground">
+          {instrumento.instrumento}
+        </h3>
 
-        <div className="precio-container">
-          <span
-            className="precio"
-            data-price={formatearPrecio(instrumento.precio)}
+        <p className="text-lg font-semibold text-primary">
+          {formatearPrecio(instrumento.precio)}
+        </p>
+
+        <div className="text-xs text-muted-foreground">
+          {renderEnvio(instrumento.costoEnvio)}
+        </div>
+
+        <p className="text-xs text-muted-foreground">
+          {instrumento.cantidadVendida} vendidos
+        </p>
+
+        <div className="mt-3 flex items-center gap-2">
+          <Button asChild size="sm" className="flex-1">
+            <Link
+              to={`/instrumento/${instrumento.id}`}
+              onClick={stopPropagation}
+            >
+              Ver detalle
+            </Link>
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-sm"
+            aria-label="Agregar a favoritos (próximamente)"
+            onClick={stopPropagation}
           >
-            {formatearPrecio(instrumento.precio)}
-          </span>
+            <Heart aria-hidden="true" />
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-sm"
+            aria-label="Agregar al carrito (próximamente)"
+            onClick={stopPropagation}
+          >
+            <ShoppingCart aria-hidden="true" />
+          </Button>
         </div>
-
-        <div className="envio-container">
-          {formatearEnvio(instrumento.costoEnvio)}
-        </div>
-
-        <div className="vendidos-container">
-          <span className="vendidos">
-            {instrumento.cantidadVendida} vendidos
-          </span>
-        </div>
-
-        <button className="btn-detalle" onClick={handleButtonClick}>
-          Ver Detalle
-        </button>
-      </div>
-    </div>
-  );
-};
+      </CardContent>
+    </Card>
+  )
+}
