@@ -12,15 +12,20 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { useCart, useOrders } from "../data/hooks"
+import { useCart, useIsDemo, useOrders } from "../data/hooks"
 import {
   decrementCartItem,
   incrementCartItem,
   parseShipping,
   removeFromCart,
 } from "../data/localStore"
-import { imageService, instrumentoService } from "../services/api"
-import type { Instrumento } from "../types/Instrumento"
+import { instrumentoService } from "../services/api"
+import type { Instrumento, ProductImage } from "../types/Instrumento"
+import {
+  getImageAltText,
+  getImageUrl,
+  loadPrimaryImageSafely,
+} from "../utils/imageUtils"
 
 interface CartDrawerProps {
   open: boolean
@@ -30,17 +35,49 @@ interface CartDrawerProps {
 const formatearPrecio = (precio: number) =>
   `$${precio.toLocaleString("es-AR")}`
 
+function CartLineImage({ instrumento }: { instrumento: Instrumento }) {
+  const [primaryImage, setPrimaryImage] = useState<ProductImage | null>(null)
+  const [imageError, setImageError] = useState(false)
+
+  useEffect(() => {
+    let active = true
+    loadPrimaryImageSafely(instrumento.id, (image) => {
+      if (active) setPrimaryImage(image)
+    })
+    return () => {
+      active = false
+    }
+  }, [instrumento.id])
+
+  const src = imageError
+    ? "/icons/no-image.svg"
+    : getImageUrl(primaryImage, instrumento.imagen)
+  const alt = getImageAltText(primaryImage, instrumento.instrumento)
+
+  return (
+    <img
+      src={src}
+      alt={alt}
+      className="size-full object-cover"
+      onError={() => setImageError(true)}
+    />
+  )
+}
+
 export function CartDrawer({ open, onOpenChange }: CartDrawerProps) {
   const cart = useCart()
   const orders = useOrders()
+  const isDemo = useIsDemo()
   const [instrumentos, setInstrumentos] = useState<Instrumento[]>([])
   const [cargando, setCargando] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     if (!open) return
 
     let active = true
     setCargando(true)
+    setError(null)
     instrumentoService
       .getAllSimple()
       .then((response) => {
@@ -54,6 +91,9 @@ export function CartDrawer({ open, onOpenChange }: CartDrawerProps) {
       })
       .catch((error) => {
         console.error("No se pudo cargar el catálogo del carrito", error)
+        if (active) {
+          setError("No se pudo cargar el catálogo del carrito.")
+        }
       })
       .finally(() => {
         if (active) setCargando(false)
@@ -70,6 +110,16 @@ export function CartDrawer({ open, onOpenChange }: CartDrawerProps) {
     )
     return instrumento ? [{ ...item, instrumento }] : []
   })
+
+  const faltantes =
+    cargando || error
+      ? []
+      : cart.filter(
+          (item) =>
+            !instrumentos.some(
+              (candidato) => candidato.id === item.instrumentoId,
+            ),
+        )
 
   const cantidadTotal = cart.reduce((total, item) => total + item.cantidad, 0)
   const subtotal = lineas.reduce(
@@ -102,35 +152,56 @@ export function CartDrawer({ open, onOpenChange }: CartDrawerProps) {
             value="carrito"
             className="mt-4 flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto"
           >
-            {cargando ? (
+            {faltantes.length > 0 && (
+              <div className="rounded-md border border-destructive/30 bg-destructive/5 p-3 text-sm">
+                <p className="text-foreground">
+                  {faltantes.length === 1
+                    ? "Un producto del carrito ya no está disponible."
+                    : `${faltantes.length} productos del carrito ya no están disponibles.`}
+                </p>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="mt-2"
+                  onClick={() => {
+                    faltantes.forEach((item) =>
+                      removeFromCart(item.instrumentoId),
+                    )
+                    toast.info(
+                      "Productos no disponibles eliminados del carrito",
+                    )
+                  }}
+                >
+                  Quitar del carrito
+                </Button>
+              </div>
+            )}
+
+            {error ? (
+              <p className="py-10 text-center text-sm text-destructive">
+                {error}
+              </p>
+            ) : cargando ? (
               <p className="py-10 text-center text-sm text-muted-foreground">
                 Cargando carrito...
               </p>
             ) : lineas.length === 0 ? (
               <p className="py-10 text-center text-sm text-muted-foreground">
-                Tu carrito está vacío.
+                {faltantes.length > 0
+                  ? "No hay productos disponibles en el carrito."
+                  : "Tu carrito está vacío."}
               </p>
             ) : (
               <>
                 <div className="flex flex-col gap-3">
                   {lineas.map((linea) => {
                     const nombre = linea.instrumento.instrumento
-                    const imageSrc = linea.instrumento.imagen
-                      ? imageService.getImageUrl(linea.instrumento.imagen)
-                      : "/icons/no-image.svg"
 
                     return (
                       <div key={linea.instrumentoId} className="flex gap-3">
                         <div className="size-16 shrink-0 overflow-hidden rounded-md bg-muted">
-                          <img
-                            src={imageSrc}
-                            alt=""
-                            className="size-full object-cover"
-                            onError={(event) => {
-                              event.currentTarget.src =
-                                "/icons/no-image.svg"
-                            }}
-                          />
+                          <CartLineImage instrumento={linea.instrumento} />
                         </div>
                         <div className="flex min-w-0 flex-1 flex-col gap-1">
                           <p className="truncate text-sm font-medium text-foreground">
@@ -210,12 +281,20 @@ export function CartDrawer({ open, onOpenChange }: CartDrawerProps) {
                 <Button
                   type="button"
                   className="w-full"
-                  onClick={() => toast.info("No disponible para demo")}
+                  onClick={() =>
+                    toast.info(
+                      isDemo
+                        ? "No disponible para demo"
+                        : "La compra no está implementada",
+                    )
+                  }
                 >
                   Confirmar compra
                 </Button>
                 <p className="text-center text-xs text-muted-foreground">
-                  Esta demo no procesa pagos ni pedidos.
+                  {isDemo
+                    ? "Esta demo no procesa pagos ni pedidos."
+                    : "La compra no está implementada todavía."}
                 </p>
               </>
             )}
