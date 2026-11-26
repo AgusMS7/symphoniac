@@ -1,6 +1,5 @@
-import type React from "react"
 import { useEffect, useState } from "react"
-import { Link, useNavigate } from "react-router-dom"
+import { Link } from "react-router-dom"
 import { Heart, ShoppingCart, Truck } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -17,10 +16,7 @@ interface InstrumentoCardProps {
   instrumento: Instrumento
 }
 
-const stopPropagation = (event: React.MouseEvent) => event.stopPropagation()
-
 export const InstrumentoCard = ({ instrumento }: InstrumentoCardProps) => {
-  const navigate = useNavigate()
   const [imageError, setImageError] = useState(false)
   const [primaryImage, setPrimaryImage] = useState<ProductImage | null>(null)
 
@@ -58,77 +54,69 @@ export const InstrumentoCard = ({ instrumento }: InstrumentoCardProps) => {
     : getImageUrl(primaryImage, instrumento.imagen)
   const imageAlt = getImageAltText(primaryImage, instrumento.instrumento)
 
-  const handleCardClick = () => {
-    navigate(`/instrumento/${instrumento.id}`)
-  }
-
   const handleImageLoadError = () => {
     setImageError(true)
   }
 
   return (
-    <Card
-      onClick={handleCardClick}
-      className="group cursor-pointer gap-0 overflow-hidden py-0 transition-colors hover:ring-primary/40"
-    >
-      <div className="aspect-[4/3] overflow-hidden bg-muted">
-        <img
-          src={imageSrc}
-          alt={imageAlt}
-          className="size-full object-cover transition-transform duration-300 group-hover:scale-[1.03] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
-          onError={(event) => {
-            handleImageError(event, instrumento.id)
-            handleImageLoadError()
-          }}
-        />
+    <Card className="group gap-0 overflow-hidden py-0 transition-colors hover:ring-primary/40">
+      <Link
+        to={`/instrumento/${instrumento.id}`}
+        aria-label={`Ver detalle de ${instrumento.instrumento}`}
+        className="block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+      >
+        <div className="aspect-[4/3] overflow-hidden bg-muted">
+          <img
+            src={imageSrc}
+            alt={imageAlt}
+            className="size-full object-cover transition-transform duration-300 group-hover:scale-[1.03] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
+            onError={(event) => {
+              handleImageError(event, instrumento.id)
+              handleImageLoadError()
+            }}
+          />
+        </div>
+
+        <CardContent className="flex flex-col gap-1.5 p-4">
+          <h3 className="line-clamp-2 font-display text-base font-semibold text-foreground">
+            {instrumento.instrumento}
+          </h3>
+
+          <p className="text-lg font-semibold text-primary">
+            {formatearPrecio(instrumento.precio)}
+          </p>
+
+          <div className="text-xs text-muted-foreground">
+            {renderEnvio(instrumento.costoEnvio)}
+          </div>
+
+          <p className="text-xs text-muted-foreground">
+            {instrumento.cantidadVendida} vendidos
+          </p>
+        </CardContent>
+      </Link>
+
+      <div className="flex items-center gap-2 px-4 pb-4">
+        <Button asChild size="sm" className="flex-1">
+          <Link to={`/instrumento/${instrumento.id}`}>Ver detalle</Link>
+        </Button>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon-sm"
+          aria-label="Agregar a favoritos (próximamente)"
+        >
+          <Heart aria-hidden="true" />
+        </Button>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon-sm"
+          aria-label="Agregar al carrito (próximamente)"
+        >
+          <ShoppingCart aria-hidden="true" />
+        </Button>
       </div>
-
-      <CardContent className="flex flex-col gap-1.5 p-4">
-        <h3 className="line-clamp-2 font-display text-base font-semibold text-foreground">
-          {instrumento.instrumento}
-        </h3>
-
-        <p className="text-lg font-semibold text-primary">
-          {formatearPrecio(instrumento.precio)}
-        </p>
-
-        <div className="text-xs text-muted-foreground">
-          {renderEnvio(instrumento.costoEnvio)}
-        </div>
-
-        <p className="text-xs text-muted-foreground">
-          {instrumento.cantidadVendida} vendidos
-        </p>
-
-        <div className="mt-3 flex items-center gap-2">
-          <Button asChild size="sm" className="flex-1">
-            <Link
-              to={`/instrumento/${instrumento.id}`}
-              onClick={stopPropagation}
-            >
-              Ver detalle
-            </Link>
-          </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon-sm"
-            aria-label="Agregar a favoritos (próximamente)"
-            onClick={stopPropagation}
-          >
-            <Heart aria-hidden="true" />
-          </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon-sm"
-            aria-label="Agregar al carrito (próximamente)"
-            onClick={stopPropagation}
-          >
-            <ShoppingCart aria-hidden="true" />
-          </Button>
-        </div>
-      </CardContent>
     </Card>
   )
 }

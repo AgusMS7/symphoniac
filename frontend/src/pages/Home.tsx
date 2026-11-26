@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
-import { ChevronLeft, ChevronRight } from "lucide-react"
+import { useReducedMotion } from "motion/react"
+import { ChevronLeft, ChevronRight, Pause, Play } from "lucide-react"
 
 import HeroSection from "@/components/shadcn-space/blocks/hero-01/hero"
 import { Button } from "@/components/ui/button"
@@ -16,6 +17,8 @@ export const Home = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [isRetrying, setIsRetrying] = useState(false)
+  const [isPaused, setIsPaused] = useState(false)
+  const reduceMotion = useReducedMotion()
   const navigate = useNavigate()
 
   const destacados = instrumentos.slice(0, 3)
@@ -63,13 +66,14 @@ export const Home = () => {
 
   useEffect(() => {
     if (destacados.length <= 1) return
+    if (reduceMotion || isPaused) return
 
     const interval = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % destacados.length)
     }, 5000)
 
     return () => clearInterval(interval)
-  }, [destacados.length])
+  }, [destacados.length, reduceMotion, isPaused])
 
   const handleRetry = () => {
     setIsRetrying(true)
@@ -197,6 +201,26 @@ export const Home = () => {
                   </Button>
                 </div>
                 <div className="absolute bottom-4 right-4 flex items-center gap-1.5">
+                  {!reduceMotion && (
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="icon"
+                      onClick={() => setIsPaused((paused) => !paused)}
+                      aria-label={
+                        isPaused
+                          ? "Reanudar la rotación de destacados"
+                          : "Pausar la rotación de destacados"
+                      }
+                      className="mr-1 size-7 rounded-full"
+                    >
+                      {isPaused ? (
+                        <Play className="size-3.5" aria-hidden="true" />
+                      ) : (
+                        <Pause className="size-3.5" aria-hidden="true" />
+                      )}
+                    </Button>
+                  )}
                   {destacados.map((instrumento, index) => (
                     <button
                       type="button"
