@@ -82,7 +82,7 @@
 
   /* Tipografía mejorada */
   --font-family-primary:
-    "Inter", "Raleway", -apple-system, BlinkMacSystemFont, sans-serif;
+    "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
   --font-family-heading: "Montserrat", "Inter", sans-serif;
   --font-family-mono: "JetBrains Mono", "Consolas", monospace;
 
