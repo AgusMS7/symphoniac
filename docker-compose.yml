@@ -23,6 +23,7 @@ services:
       PORT: 3001
       UPLOAD_DIR: /app/uploads
       CORS_ALLOWED_ORIGINS: http://localhost:${FRONT_PORT:-8081}
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-demo}
     volumes:
       - uploads:/app/uploads
     depends_on:
@@ -41,6 +42,9 @@ services:
       args:
         VITE_API_URL: /api
         VITE_IMAGES_URL: /images
+        # Demo por defecto en Docker. Para escrituras reales:
+        # VITE_DEMO=false SPRING_PROFILES_ACTIVE=default docker compose up -d --build
+        VITE_DEMO: ${VITE_DEMO:-true}
     ports:
       - "${FRONT_PORT:-8081}:8080"
     depends_on:

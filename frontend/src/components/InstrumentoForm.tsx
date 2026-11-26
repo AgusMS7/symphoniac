@@ -25,6 +25,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
+import { useIsDemo } from "../data/hooks"
 import type { Categoria } from "../types/Categoria"
 import type { Instrumento } from "../types/Instrumento"
 import { imageService } from "../services/api"
@@ -68,6 +69,7 @@ export const InstrumentoForm = ({
   const [currentImageId, setCurrentImageId] = useState<number | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const isDemo = useIsDemo()
 
   useEffect(() => {
     if (instrumento) {
@@ -247,7 +249,7 @@ export const InstrumentoForm = ({
       }
 
       // Si hay una imagen seleccionada y tenemos un ID, subirla
-      if (selectedFile && instrumentoId) {
+      if (selectedFile && instrumentoId && !isDemo) {
         try {
           const uploadResponse = await imageService.upload(
             instrumentoId,
@@ -503,6 +505,7 @@ export const InstrumentoForm = ({
                     type="button"
                     variant="outline"
                     onClick={() => fileInputRef.current?.click()}
+                    disabled={isDemo}
                   >
                     <Upload aria-hidden="true" />
                     Seleccionar imagen
@@ -514,7 +517,7 @@ export const InstrumentoForm = ({
                           <Button
                             type="button"
                             variant="destructive"
-                            disabled={isDeleting}
+                            disabled={isDemo || isDeleting}
                           >
                             <Trash2 aria-hidden="true" />
                             {isDeleting ? "Eliminando..." : "Eliminar"}
@@ -544,7 +547,7 @@ export const InstrumentoForm = ({
                         type="button"
                         variant="destructive"
                         onClick={handleDeleteImage}
-                        disabled={isDeleting}
+                        disabled={isDemo || isDeleting}
                       >
                         <Trash2 aria-hidden="true" />
                         Eliminar
@@ -562,6 +565,11 @@ export const InstrumentoForm = ({
                 <p className="text-xs text-muted-foreground">
                   Formatos: JPG, PNG, GIF. Máximo 5MB.
                 </p>
+                {isDemo && (
+                  <p className="text-xs text-muted-foreground">
+                    Deshabilitado para Demo
+                  </p>
+                )}
                 {selectedFile && (
                   <p className="flex items-center gap-1.5 text-xs text-primary">
                     <Check className="size-3.5" aria-hidden="true" />

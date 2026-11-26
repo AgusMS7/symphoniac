@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react"
+import { useSearchParams } from "react-router-dom"
 import { ChevronLeft, ChevronRight, Search } from "lucide-react"
 
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -22,6 +24,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { InstrumentoCard } from "../components/InstrumentoCard"
 import { FiltroCategoria } from "../components/FiltroCategoria"
 import { ErrorScreen } from "../components/ErrorScreen"
+import { useCatalogUpdated, useFavorites } from "../data/hooks"
 import type { Instrumento, Categoria } from "../types/Instrumento"
 import { instrumentoService, categoriaService } from "../services/api"
 
@@ -46,10 +49,13 @@ export const Productos = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [isRetrying, setIsRetrying] = useState(false)
+  const [searchParams, setSearchParams] = useSearchParams()
+  const favoritos = useFavorites()
+  const soloFavoritos = searchParams.get("favoritos") === "1"
 
   // Paginación
   const [paginaActual, setPaginaActual] = useState(1)
-  const instrumentosPorPagina = 12
+  const instrumentosPorPagina = 10
 
   const fetchData = async () => {
     try {
@@ -116,14 +122,30 @@ export const Productos = () => {
     fetchData()
   }, [])
 
+  useCatalogUpdated(fetchData)
+
   useEffect(() => {
     aplicarFiltros()
     setPaginaActual(1) // Resetear a primera página cuando cambian los filtros
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [instrumentos, categoriaSeleccionada, busqueda, ordenamiento])
+  }, [
+    instrumentos,
+    categoriaSeleccionada,
+    busqueda,
+    ordenamiento,
+    soloFavoritos,
+    favoritos,
+  ])
 
   const aplicarFiltros = () => {
     let resultado = [...instrumentos]
+
+    // Filtrar por favoritos
+    if (soloFavoritos) {
+      resultado = resultado.filter((instrumento) =>
+        favoritos.includes(instrumento.id),
+      )
+    }
 
     // Filtrar por categoría
     if (categoriaSeleccionada) {
@@ -175,10 +197,18 @@ export const Productos = () => {
     setCategoriaSeleccionada(categoriaId)
   }
 
+  const quitarFiltroFavoritos = () => {
+    if (!soloFavoritos) return
+    const next = new URLSearchParams(searchParams)
+    next.delete("favoritos")
+    setSearchParams(next, { replace: true })
+  }
+
   const limpiarFiltros = () => {
     setCategoriaSeleccionada("")
     setBusqueda("")
     setOrdenamiento("nombre")
+    quitarFiltroFavoritos()
   }
 
   // Lógica de paginación
@@ -248,6 +278,18 @@ export const Productos = () => {
         <p className="mt-2 text-base text-muted-foreground">
           Explora nuestra colección de instrumentos musicales de alta calidad
         </p>
+        {soloFavoritos && (
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <Badge variant="secondary">Mostrando favoritos</Badge>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={quitarFiltroFavoritos}
+            >
+              Ver todos
+            </Button>
+          </div>
+        )}
       </header>
 
       <Card className="mt-8">
@@ -320,8 +362,9 @@ export const Productos = () => {
         <Card className="mt-6">
           <CardContent className="flex flex-col items-center gap-4 py-10 text-center">
             <p className="text-sm text-muted-foreground">
-              No se encontraron instrumentos que coincidan con los filtros
-              aplicados.
+              {soloFavoritos
+                ? "Todavía no marcaste instrumentos como favoritos. Usá el corazón en las tarjetas o en el detalle."
+                : "No se encontraron instrumentos que coincidan con los filtros aplicados."}
             </p>
             <Button onClick={limpiarFiltros}>Limpiar filtros</Button>
           </CardContent>

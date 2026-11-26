@@ -36,6 +36,7 @@ import {
 import { InstrumentoForm } from "../components/InstrumentoForm"
 import { CategoriaAdmin } from "../components/CategoriaAdmin"
 import { ErrorScreen } from "../components/ErrorScreen"
+import { useCatalogUpdated } from "../data/hooks"
 import type {
   Instrumento,
   Categoria,
@@ -160,6 +161,8 @@ export const Admin = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  useCatalogUpdated(fetchData)
+
   const handleRetry = () => {
     setIsRetrying(true)
     setLoading(true)
@@ -193,44 +196,31 @@ export const Admin = () => {
 
   const handleFormSubmit = async (data: unknown) => {
     try {
-      let response
+      const response = editingInstrumento
+        ? await instrumentoService.update(editingInstrumento.id, data)
+        : await instrumentoService.create(data)
+
+      const savedInstrumento = response.data
+      if (!savedInstrumento) {
+        throw new Error(response.message || "No se recibió el instrumento guardado")
+      }
 
       if (editingInstrumento) {
-        response = await instrumentoService.update(editingInstrumento.id, data)
+        setInstrumentos((prev) =>
+          prev.map((inst) =>
+            inst.id === editingInstrumento.id ? savedInstrumento : inst,
+          ),
+        )
       } else {
-        response = await instrumentoService.create(data)
+        setInstrumentos((prev) => [...prev, savedInstrumento])
       }
 
-      // Manejar diferentes tipos de respuesta
-      let savedInstrumento
-      if (response.success && response.data) {
-        savedInstrumento = response.data
-      } else if (response.data) {
-        savedInstrumento = response.data
-      } else {
-        savedInstrumento = response
-      }
+      // Refrescar la lista para mostrar las imágenes actualizadas
+      setTimeout(() => {
+        fetchData()
+      }, 500)
 
-      if (savedInstrumento) {
-        if (editingInstrumento) {
-          setInstrumentos((prev) =>
-            prev.map((inst) =>
-              inst.id === editingInstrumento.id ? savedInstrumento : inst,
-            ),
-          )
-        } else {
-          setInstrumentos((prev) => [...prev, savedInstrumento])
-        }
-
-        // Refrescar la lista para mostrar las imágenes actualizadas
-        setTimeout(() => {
-          fetchData()
-        }, 500)
-
-        return savedInstrumento
-      } else {
-        throw new Error("No se recibió el instrumento guardado")
-      }
+      return savedInstrumento
     } catch (error) {
       console.error("Error al guardar:", error)
       toast.error("Error al guardar instrumento: " + error)

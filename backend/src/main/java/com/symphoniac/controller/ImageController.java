@@ -44,13 +44,16 @@ public class ImageController {
    private final ProductImageService productImageService;
    private final InstrumentoService instrumentoService;
    private final String uploadDir;
+   private final boolean uploadEnabled;
 
    public ImageController(ProductImageService productImageService,
            InstrumentoService instrumentoService,
-           @Value("${app.upload.dir:public/images}") String uploadDir) {
+           @Value("${app.upload.dir:public/images}") String uploadDir,
+           @Value("${app.images.upload-enabled:true}") boolean uploadEnabled) {
        this.productImageService = productImageService;
        this.instrumentoService = instrumentoService;
        this.uploadDir = uploadDir;
+       this.uploadEnabled = uploadEnabled;
    }
    
    @PostMapping("/upload/{instrumentoId}")
@@ -59,6 +62,11 @@ public class ImageController {
            @RequestParam("file") MultipartFile file,
            @RequestParam(defaultValue = "false") boolean isPrimary,
            @RequestParam(required = false) String altText) {
+
+       if (!uploadEnabled) {
+           return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED)
+               .body(new ApiResponse<>(false, "Deshabilitado para Demo", null));
+       }
        
        try {
            logger.info("Subiendo imagen para instrumento ID: {}", instrumentoId);

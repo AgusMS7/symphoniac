@@ -6,8 +6,10 @@ RUN npm ci
 COPY . .
 ARG VITE_API_URL=/api
 ARG VITE_IMAGES_URL=/images
+ARG VITE_DEMO=false
 ENV VITE_API_URL=$VITE_API_URL \
-    VITE_IMAGES_URL=$VITE_IMAGES_URL
+    VITE_IMAGES_URL=$VITE_IMAGES_URL \
+    VITE_DEMO=$VITE_DEMO
 RUN npm run build
 
 FROM nginxinc/nginx-unprivileged:1.27-alpine

@@ -1,9 +1,12 @@
 import { useEffect, useState } from "react"
 import { Link } from "react-router-dom"
 import { Heart, ShoppingCart, Truck } from "lucide-react"
+import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
+import { useFavorites } from "../data/hooks"
+import { addToCart, toggleFavorite } from "../data/localStore"
 import type { Instrumento, ProductImage } from "../types/Instrumento"
 import {
   getImageAltText,
@@ -19,6 +22,8 @@ interface InstrumentoCardProps {
 export const InstrumentoCard = ({ instrumento }: InstrumentoCardProps) => {
   const [imageError, setImageError] = useState(false)
   const [primaryImage, setPrimaryImage] = useState<ProductImage | null>(null)
+  const favoritos = useFavorites()
+  const esFavorito = favoritos.includes(instrumento.id)
 
   useEffect(() => {
     let active = true
@@ -104,15 +109,28 @@ export const InstrumentoCard = ({ instrumento }: InstrumentoCardProps) => {
           type="button"
           variant="ghost"
           size="icon-sm"
-          aria-label="Agregar a favoritos (próximamente)"
+          aria-label={
+            esFavorito
+              ? `Quitar ${instrumento.instrumento} de favoritos`
+              : `Agregar ${instrumento.instrumento} a favoritos`
+          }
+          aria-pressed={esFavorito}
+          onClick={() => toggleFavorite(instrumento.id)}
         >
-          <Heart aria-hidden="true" />
+          <Heart
+            aria-hidden="true"
+            className={esFavorito ? "fill-current text-primary" : undefined}
+          />
         </Button>
         <Button
           type="button"
           variant="ghost"
           size="icon-sm"
-          aria-label="Agregar al carrito (próximamente)"
+          aria-label={`Agregar ${instrumento.instrumento} al carrito`}
+          onClick={() => {
+            addToCart(instrumento.id)
+            toast.success("Agregado al carrito")
+          }}
         >
           <ShoppingCart aria-hidden="true" />
         </Button>
