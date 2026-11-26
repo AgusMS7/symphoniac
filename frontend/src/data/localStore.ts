@@ -163,9 +163,3 @@ export function getOrders(): LocalOrder[] {
   if (ordersCache === null) ordersCache = loadOrders()
   return ordersCache
 }
-
-export function writeOrders(orders: LocalOrder[]): void {
-  ordersCache = orders
-  writeJson(STORAGE_KEYS.orders, orders)
-  emit()
-}
