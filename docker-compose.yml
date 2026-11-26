@@ -42,7 +42,9 @@ services:
       args:
         VITE_API_URL: /api
         VITE_IMAGES_URL: /images
-        VITE_DEMO: "true"
+        # Demo por defecto en Docker. Para escrituras reales:
+        # VITE_DEMO=false SPRING_PROFILES_ACTIVE=default docker compose up -d --build
+        VITE_DEMO: ${VITE_DEMO:-true}
     ports:
       - "${FRONT_PORT:-8081}:8080"
     depends_on:
