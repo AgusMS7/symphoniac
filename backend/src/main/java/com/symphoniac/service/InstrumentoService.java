@@ -108,7 +108,7 @@ public class InstrumentoService {
             
             return convertToDTO(savedInstrumento);
         } catch (RuntimeException e) {
-            throw e; // Re-lanzar excepciones de negocio (BusinessException)
+            throw e; // Re-lanzar runtime exceptions sin envolver (p. ej. BusinessException)
         } catch (Exception e) {
             logger.error("Error al guardar instrumento: {}", e.getMessage(), e);
             throw new RuntimeException("Error al guardar instrumento: " + e.getMessage(), e);
