@@ -18,6 +18,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet"
 import { CartDrawer } from "../cart-drawer"
+import { IS_DEMO } from "../../data/config"
 import { useCart, useFavorites } from "../../data/hooks"
 import { clearDemoData } from "../../data/storage"
 
@@ -78,8 +79,9 @@ function DemoChip() {
           Modo demo
         </p>
         <p className="mt-1 text-sm text-muted-foreground">
-          El catálogo es de solo lectura. Favoritos, carrito y pedidos se
-          guardan en este navegador.
+          El catálogo viene del backend. Tus cambios (instrumentos, categorías,
+          favoritos y carrito) se guardan en este navegador. La compra no está
+          disponible en la demo.
         </p>
         <Button
           type="button"
@@ -195,7 +197,7 @@ export function Navbar() {
         </nav>
 
         <div className="flex items-center gap-1.5">
-          <DemoChip />
+          {IS_DEMO && <DemoChip />}
           <div className="hidden sm:block">
             <ActionIcons onCartClick={() => setCartOpen(true)} />
           </div>
