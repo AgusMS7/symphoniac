@@ -1,0 +1,6 @@
+target/
+.git/
+*.log
+public/images/
+scripts/
+db/
