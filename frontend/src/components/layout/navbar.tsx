@@ -17,6 +17,9 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet"
+import { CartDrawer } from "../cart-drawer"
+import { useCart, useFavorites } from "../../data/hooks"
+import { clearDemoData } from "../../data/storage"
 
 const links = [
   { href: "/", label: "Inicio" },
@@ -35,7 +38,16 @@ function isActive(pathname: string, href: string) {
   return pathname.startsWith(href)
 }
 
+function formatBadgeCount(count: number) {
+  return count > 99 ? "99+" : count.toString()
+}
+
 function DemoChip() {
+  const borrarDatos = () => {
+    clearDemoData()
+    window.location.reload()
+  }
+
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -66,40 +78,69 @@ function DemoChip() {
           Modo demo
         </p>
         <p className="mt-1 text-sm text-muted-foreground">
-          Catálogo de ejemplo en solo lectura. Carrito, favoritos y pedidos se
+          El catálogo es de solo lectura. Favoritos, carrito y pedidos se
           guardan en este navegador.
         </p>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="mt-3 w-full"
+          onClick={borrarDatos}
+        >
+          Borrar datos demo
+        </Button>
       </PopoverContent>
     </Popover>
   )
 }
 
-function ActionIcons() {
+function ActionIcons({
+  onCartClick,
+  onFavoritesClick,
+}: {
+  onCartClick: () => void
+  onFavoritesClick?: () => void
+}) {
+  const favoritos = useFavorites()
+  const cart = useCart()
+  const cartCount = cart.reduce((total, item) => total + item.cantidad, 0)
+
   return (
     <div className="flex items-center gap-0.5">
       <Button
-        type="button"
+        asChild
         variant="ghost"
         size="icon"
-        aria-label="Favoritos"
         className={cn("relative", focusRing)}
       >
-        <Heart className="size-4" aria-hidden="true" />
-        <Badge className="absolute -right-0.5 -top-0.5 flex size-4 items-center justify-center rounded-full p-0 text-[10px]">
-          0
-        </Badge>
+        <Link
+          to="/productos?favoritos=1"
+          aria-label={`Favoritos (${favoritos.length})`}
+          onClick={onFavoritesClick}
+        >
+          <Heart className="size-4" aria-hidden="true" />
+          {favoritos.length > 0 && (
+            <Badge className="absolute -right-0.5 -top-0.5 flex size-4 items-center justify-center rounded-full p-0 text-[10px]">
+              {formatBadgeCount(favoritos.length)}
+            </Badge>
+          )}
+        </Link>
       </Button>
       <Button
         type="button"
         variant="ghost"
         size="icon"
-        aria-label="Carrito"
+        aria-label={`Carrito (${cartCount})`}
         className={cn("relative", focusRing)}
+        onClick={onCartClick}
       >
         <ShoppingCart className="size-4" aria-hidden="true" />
-        <Badge className="absolute -right-0.5 -top-0.5 flex size-4 items-center justify-center rounded-full p-0 text-[10px]">
-          0
-        </Badge>
+        {cartCount > 0 && (
+          <Badge className="absolute -right-0.5 -top-0.5 flex size-4 items-center justify-center rounded-full p-0 text-[10px]">
+            {formatBadgeCount(cartCount)}
+          </Badge>
+        )}
       </Button>
     </div>
   )
@@ -107,6 +148,7 @@ function ActionIcons() {
 
 export function Navbar() {
   const [open, setOpen] = useState(false)
+  const [cartOpen, setCartOpen] = useState(false)
   const { pathname } = useLocation()
 
   return (
@@ -155,7 +197,7 @@ export function Navbar() {
         <div className="flex items-center gap-1.5">
           <DemoChip />
           <div className="hidden sm:block">
-            <ActionIcons />
+            <ActionIcons onCartClick={() => setCartOpen(true)} />
           </div>
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
@@ -196,12 +238,20 @@ export function Navbar() {
                 })}
               </nav>
               <div className="mt-6 border-t border-border pt-4 sm:hidden">
-                <ActionIcons />
+                <ActionIcons
+                  onCartClick={() => {
+                    setOpen(false)
+                    setCartOpen(true)
+                  }}
+                  onFavoritesClick={() => setOpen(false)}
+                />
               </div>
             </SheetContent>
           </Sheet>
         </div>
       </div>
+
+      <CartDrawer open={cartOpen} onOpenChange={setCartOpen} />
     </header>
   )
 }

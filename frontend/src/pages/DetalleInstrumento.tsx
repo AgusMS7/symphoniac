@@ -8,12 +8,15 @@ import {
   TriangleAlert,
   Truck,
 } from "lucide-react"
+import { toast } from "sonner"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { Skeleton } from "@/components/ui/skeleton"
+import { useFavorites } from "../data/hooks"
+import { addToCart, toggleFavorite } from "../data/localStore"
 import type {
   Instrumento,
   Categoria,
@@ -34,6 +37,8 @@ export const DetalleInstrumento: React.FC = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [imageError, setImageError] = useState(false)
+  const favoritos = useFavorites()
+  const esFavorito = instrumento ? favoritos.includes(instrumento.id) : false
 
   useEffect(() => {
     if (id) {
@@ -284,16 +289,30 @@ export const DetalleInstrumento: React.FC = () => {
           )}
 
           <div className="flex flex-wrap items-center gap-2 pt-2">
-            <Button>
+            <Button
+              onClick={() => {
+                addToCart(instrumento.id)
+                toast.success("Agregado al carrito")
+              }}
+            >
               <ShoppingCart aria-hidden="true" />
               Agregar al carrito
             </Button>
             <Button
               variant="outline"
               size="icon-lg"
-              aria-label="Agregar a favoritos (próximamente)"
+              aria-label={
+                esFavorito
+                  ? "Quitar de favoritos"
+                  : "Agregar a favoritos"
+              }
+              aria-pressed={esFavorito}
+              onClick={() => toggleFavorite(instrumento.id)}
             >
-              <Heart aria-hidden="true" />
+              <Heart
+                aria-hidden="true"
+                className={esFavorito ? "fill-current text-primary" : undefined}
+              />
             </Button>
           </div>
         </div>

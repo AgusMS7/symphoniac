@@ -45,3 +45,24 @@ export interface PaginatedResponse<T> {
   size: number
   number: number
 }
+
+/**
+ * Respuesta estándar de los servicios de datos. El backend responde
+ * `{ success, message, data }`; los métodos de demo también usan esta forma.
+ */
+export interface ServiceResponse<T> {
+  success?: boolean
+  message?: string
+  data?: T | null
+  status?: number
+  error?: unknown
+}
+
+/** Respuesta de listados que además puede traer la forma paginada de Spring. */
+export interface PaginatedServiceResponse<T> extends ServiceResponse<T[]> {
+  content?: T[]
+  totalElements?: number
+  totalPages?: number
+  size?: number
+  number?: number
+}

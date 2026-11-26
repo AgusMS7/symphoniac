@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { InstrumentoCard } from "../components/InstrumentoCard"
 import { ErrorScreen } from "../components/ErrorScreen"
+import { useCatalogUpdated } from "../data/hooks"
 import type { Instrumento } from "../types/Instrumento"
 import { instrumentoService, imageService } from "../services/api"
 
@@ -59,6 +60,8 @@ export const Home = () => {
   useEffect(() => {
     fetchInstrumentos()
   }, [])
+
+  useCatalogUpdated(fetchInstrumentos)
 
   useEffect(() => {
     setCurrentSlide(0)
