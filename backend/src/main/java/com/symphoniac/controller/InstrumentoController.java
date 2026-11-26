@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.symphoniac.dto.ApiResponse;
 import com.symphoniac.dto.InstrumentoDTO;
+import com.symphoniac.exception.BusinessException;
 import com.symphoniac.model.Instrumento;
 import com.symphoniac.service.InstrumentoService;
 
@@ -95,6 +96,8 @@ public class InstrumentoController {
             InstrumentoDTO nuevoInstrumento = instrumentoService.save(instrumento);
             return ResponseEntity.status(HttpStatus.CREATED)
                 .body(new ApiResponse<>(true, "Instrumento creado exitosamente", nuevoInstrumento));
+        } catch (BusinessException e) {
+            throw e; // Lo resuelve GlobalExceptionHandler (400 con success=false)
         } catch (Exception e) {
             logger.error("Error al crear instrumento: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -115,6 +118,8 @@ public class InstrumentoController {
             instrumento.setId(id);
             InstrumentoDTO instrumentoActualizado = instrumentoService.save(instrumento);
             return ResponseEntity.ok(new ApiResponse<>(true, "Instrumento actualizado exitosamente", instrumentoActualizado));
+        } catch (BusinessException e) {
+            throw e; // Lo resuelve GlobalExceptionHandler (400 con success=false)
         } catch (Exception e) {
             logger.error("Error al actualizar instrumento {}: {}", id, e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)

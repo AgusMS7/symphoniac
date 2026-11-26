@@ -54,7 +54,8 @@ public class InstrumentoDTO {
         dto.setCostoEnvio(instrumento.getCostoEnvio());
         dto.setCantidadVendida(instrumento.getCantidadVendida());
         dto.setDescripcion(instrumento.getDescripcion());
-        
+        dto.setIdCategoria(instrumento.getIdCategoria());
+
         if (instrumento.getCategoria() != null) {
             dto.setIdCategoria(instrumento.getCategoria().getId());
             dto.setCategoriaDenominacion(instrumento.getCategoria().getDenominacion());

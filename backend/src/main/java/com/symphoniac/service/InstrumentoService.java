@@ -13,8 +13,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.symphoniac.dto.InstrumentoDTO;
+import com.symphoniac.exception.BusinessException;
 import com.symphoniac.exception.ResourceNotFoundException;
+import com.symphoniac.model.Categoria;
 import com.symphoniac.model.Instrumento;
+import com.symphoniac.repository.CategoriaRepository;
 import com.symphoniac.repository.InstrumentoRepository;
 
 @Service
@@ -24,11 +27,14 @@ public class InstrumentoService {
     private static final Logger logger = LoggerFactory.getLogger(InstrumentoService.class);
 
     private final InstrumentoRepository instrumentoRepository;
+    private final CategoriaRepository categoriaRepository;
     private final ProductImageService productImageService;
 
     public InstrumentoService(InstrumentoRepository instrumentoRepository,
+                              CategoriaRepository categoriaRepository,
                               ProductImageService productImageService) {
         this.instrumentoRepository = instrumentoRepository;
+        this.categoriaRepository = categoriaRepository;
         this.productImageService = productImageService;
     }
 
@@ -77,11 +83,32 @@ public class InstrumentoService {
     public InstrumentoDTO save(Instrumento instrumento) {
         try {
             logger.debug("Guardando instrumento: {}", instrumento.getInstrumento());
-            
+
+            // El frontend envia la relacion categoria:{id}; idCategoria es la columna
+            // escribible que realmente persiste el vinculo. Normalizamos ambos campos.
+            Long categoriaId = null;
+            if (instrumento.getCategoria() != null) {
+                categoriaId = instrumento.getCategoria().getId();
+            }
+            if (categoriaId == null) {
+                categoriaId = instrumento.getIdCategoria();
+            }
+
+            if (categoriaId != null) {
+                Long finalCategoriaId = categoriaId;
+                Categoria categoria = categoriaRepository.findById(categoriaId)
+                        .orElseThrow(() -> new BusinessException(
+                                "Categoría no encontrada con ID: " + finalCategoriaId));
+                instrumento.setCategoria(categoria);
+                instrumento.setIdCategoria(categoriaId);
+            }
+
             Instrumento savedInstrumento = instrumentoRepository.save(instrumento);
             logger.info("Instrumento guardado exitosamente con ID: {}", savedInstrumento.getId());
             
             return convertToDTO(savedInstrumento);
+        } catch (RuntimeException e) {
+            throw e; // Re-lanzar runtime exceptions sin envolver (p. ej. BusinessException)
         } catch (Exception e) {
             logger.error("Error al guardar instrumento: {}", e.getMessage(), e);
             throw new RuntimeException("Error al guardar instrumento: " + e.getMessage(), e);
