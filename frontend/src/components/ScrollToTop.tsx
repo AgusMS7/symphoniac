@@ -1,44 +1,49 @@
-import React, { useState, useEffect } from "react";
+import { useEffect, useState } from "react"
+import { AnimatePresence, motion, useReducedMotion } from "motion/react"
+import { ArrowUp } from "lucide-react"
 
-export const ScrollToTop: React.FC = () => {
-  const [isVisible, setIsVisible] = useState(false);
-  const [scrollProgress, setScrollProgress] = useState(0);
+import { Button } from "@/components/ui/button"
+
+export const ScrollToTop = () => {
+  const [isVisible, setIsVisible] = useState(false)
+  const reduceMotion = useReducedMotion()
 
   useEffect(() => {
-    const handleScroll = () => {
-      const scrollTop = window.pageYOffset;
-      const docHeight =
-        document.documentElement.scrollHeight - window.innerHeight;
-      const scrollPercent = (scrollTop / docHeight) * 100;
+    const handleScroll = () => setIsVisible(window.scrollY > 300)
 
-      setScrollProgress(scrollPercent);
-      setIsVisible(scrollTop > 300);
-    };
-
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+    handleScroll()
+    window.addEventListener("scroll", handleScroll, { passive: true })
+    return () => window.removeEventListener("scroll", handleScroll)
+  }, [])
 
   const scrollToTop = () => {
     window.scrollTo({
       top: 0,
-      behavior: "smooth",
-    });
-  };
+      behavior: reduceMotion ? "auto" : "smooth",
+    })
+  }
 
   return (
-    <>
-      <div
-        className="scroll-indicator"
-        style={{ width: `${scrollProgress}%` }}
-      />
-      <button
-        className={`scroll-to-top ${isVisible ? "visible" : ""}`}
-        onClick={scrollToTop}
-        aria-label="Volver al inicio"
-      >
-        ↑
-      </button>
-    </>
-  );
-};
+    <AnimatePresence>
+      {isVisible && (
+        <motion.div
+          initial={reduceMotion ? false : { opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={reduceMotion ? undefined : { opacity: 0, y: 16 }}
+          transition={{ duration: 0.2, ease: "easeOut" }}
+          className="fixed bottom-6 right-6 z-40"
+        >
+          <Button
+            type="button"
+            size="icon-lg"
+            onClick={scrollToTop}
+            aria-label="Volver al inicio"
+            className="rounded-full shadow-lg"
+          >
+            <ArrowUp className="size-5" aria-hidden="true" />
+          </Button>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  )
+}

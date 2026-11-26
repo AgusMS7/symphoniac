@@ -1,15 +1,44 @@
-import type React from "react";
-import { useState, useEffect, useRef } from "react";
-import type { Instrumento } from "../types/Instrumento";
-import type { Categoria } from "../types/Categoria";
-import { imageService } from "../services/api";
-import "./InstrumentoForm.css";
+import type React from "react"
+import { useEffect, useRef, useState } from "react"
+import { Check, Image, Trash2, Upload } from "lucide-react"
+import { toast } from "sonner"
+
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { Textarea } from "@/components/ui/textarea"
+import type { Categoria } from "../types/Categoria"
+import type { Instrumento } from "../types/Instrumento"
+import { imageService } from "../services/api"
 
 interface InstrumentoFormProps {
-  instrumento?: Instrumento | null;
-  categorias: Categoria[];
-  onSubmit: (data: unknown) => Promise<unknown>;
-  onCancel: () => void;
+  instrumento?: Instrumento | null
+  categorias: Categoria[]
+  onSubmit: (data: unknown) => Promise<unknown>
+  onCancel: () => void
+}
+
+interface SubmitResponse {
+  id?: number
+  data?: { id?: number }
 }
 
 export const InstrumentoForm = ({
@@ -28,17 +57,17 @@ export const InstrumentoForm = ({
     cantidadVendida: "0",
     descripcion: "",
     idCategoria: "",
-  });
+  })
 
-  const [errors, setErrors] = useState<{ [key: string]: string }>({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [envioGratis, setEnvioGratis] = useState(true);
-  const [costoEnvioCustom, setCostoEnvioCustom] = useState("");
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [currentImageId, setCurrentImageId] = useState<number | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [errors, setErrors] = useState<{ [key: string]: string }>({})
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [envioGratis, setEnvioGratis] = useState(true)
+  const [costoEnvioCustom, setCostoEnvioCustom] = useState("")
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [imagePreview, setImagePreview] = useState<string | null>(null)
+  const [currentImageId, setCurrentImageId] = useState<number | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     if (instrumento) {
@@ -52,69 +81,65 @@ export const InstrumentoForm = ({
         cantidadVendida: instrumento.cantidadVendida?.toString() || "0",
         descripcion: instrumento.descripcion || "",
         idCategoria: instrumento.idCategoria?.toString() || "",
-      });
+      })
 
       // Configurar envío
       if (instrumento.costoEnvio === "G" || instrumento.costoEnvio === "0") {
-        setEnvioGratis(true);
-        setCostoEnvioCustom("");
+        setEnvioGratis(true)
+        setCostoEnvioCustom("")
       } else {
-        setEnvioGratis(false);
-        setCostoEnvioCustom(instrumento.costoEnvio);
+        setEnvioGratis(false)
+        setCostoEnvioCustom(instrumento.costoEnvio)
       }
 
       // Configurar preview de imagen - priorizar imagen principal del nuevo sistema
-      loadImagePreview(instrumento.id);
+      loadImagePreview(instrumento.id)
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [instrumento]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [instrumento])
 
   const loadImagePreview = async (instrumentoId: number) => {
     try {
       // Intentar obtener la imagen principal del nuevo sistema
-      const primaryResponse = await imageService.getPrimary(instrumentoId);
+      const primaryResponse = await imageService.getPrimary(instrumentoId)
       if (primaryResponse.success && primaryResponse.data) {
-        setImagePreview(
-          imageService.getImageUrl(primaryResponse.data.imageUrl),
-        );
-        setCurrentImageId(primaryResponse.data.id);
-        return;
-      } else {
-        // No hay imagen principal configurada, intentar con imagen legacy
+        setImagePreview(imageService.getImageUrl(primaryResponse.data.imageUrl))
+        setCurrentImageId(primaryResponse.data.id)
+        return
       }
-    } catch (error) {
+    } catch {
       // Error de conexión, intentar con imagen legacy
     }
 
     // Si no hay imagen principal, usar la imagen legacy
     if (instrumento?.imagen) {
-      setImagePreview(imageService.getImageUrl(instrumento.imagen));
+      setImagePreview(imageService.getImageUrl(instrumento.imagen))
     }
-  };
+  }
 
   const validateForm = () => {
-    const newErrors: { [key: string]: string } = {};
+    const newErrors: { [key: string]: string } = {}
 
     if (!formData.instrumento.trim()) {
-      newErrors.instrumento = "El nombre del instrumento es requerido";
+      newErrors.instrumento = "El nombre del instrumento es requerido"
     }
 
     if (!formData.marca.trim()) {
-      newErrors.marca = "La marca es requerida";
+      newErrors.marca = "La marca es requerida"
     }
 
     if (!formData.modelo.trim()) {
-      newErrors.modelo = "El modelo es requerido";
+      newErrors.modelo = "El modelo es requerido"
     }
 
     if (!formData.precio.trim()) {
-      newErrors.precio = "El precio es requerido";
+      newErrors.precio = "El precio es requerido"
     } else if (isNaN(Number(formData.precio)) || Number(formData.precio) <= 0) {
-      newErrors.precio = "El precio debe ser un número válido mayor a 0";
+      newErrors.precio = "El precio debe ser un número válido mayor a 0"
     }
 
     if (!formData.idCategoria) {
-      newErrors.idCategoria = "Debe seleccionar una categoría";
+      newErrors.idCategoria = "Debe seleccionar una categoría"
     }
 
     if (
@@ -123,79 +148,75 @@ export const InstrumentoForm = ({
         isNaN(Number(costoEnvioCustom)) ||
         Number(costoEnvioCustom) < 0)
     ) {
-      newErrors.costoEnvio = "Debe ingresar un costo de envío válido";
+      newErrors.costoEnvio = "Debe ingresar un costo de envío válido"
     }
 
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+    const file = e.target.files?.[0]
     if (file) {
       // Validar tipo de archivo
       if (!file.type.startsWith("image/")) {
-        alert("Por favor selecciona un archivo de imagen válido");
-        return;
+        toast.error("Por favor selecciona un archivo de imagen válido")
+        return
       }
 
       // Validar tamaño (máximo 5MB)
       if (file.size > 5 * 1024 * 1024) {
-        alert("El archivo es demasiado grande. Máximo 5MB.");
-        return;
+        toast.error("El archivo es demasiado grande. Máximo 5MB.")
+        return
       }
 
-      setSelectedFile(file);
+      setSelectedFile(file)
 
       // Crear preview
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setImagePreview(e.target?.result as string);
-      };
-      reader.readAsDataURL(file);
+      const reader = new FileReader()
+      reader.onload = (event) => {
+        setImagePreview(event.target?.result as string)
+      }
+      reader.readAsDataURL(file)
     }
-  };
+  }
 
   const handleDeleteImage = async () => {
     if (!currentImageId) {
       // Si no hay imagen del nuevo sistema, solo limpiar preview
-      setImagePreview(null);
-      setSelectedFile(null);
-      return;
+      setImagePreview(null)
+      setSelectedFile(null)
+      return
     }
 
-    if (!confirm("¿Estás seguro de que quieres eliminar esta imagen?")) {
-      return;
-    }
-
-    setIsDeleting(true);
+    setIsDeleting(true)
     try {
-      await imageService.delete(currentImageId);
-      setImagePreview(null);
-      setCurrentImageId(null);
-      setSelectedFile(null);
+      await imageService.delete(currentImageId)
+      setImagePreview(null)
+      setCurrentImageId(null)
+      setSelectedFile(null)
     } catch (error) {
-      console.error("Error eliminando imagen:", error);
-      alert("Error al eliminar la imagen");
+      console.error("Error eliminando imagen:", error)
+      toast.error("Error al eliminar la imagen")
     } finally {
-      setIsDeleting(false);
+      setIsDeleting(false)
     }
-  };
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault()
 
     if (!validateForm()) {
-      return;
+      return
     }
 
-    setIsSubmitting(true);
+    setIsSubmitting(true)
 
     try {
       // Determinar costo de envío
-      const costoEnvioFinal = envioGratis ? "G" : costoEnvioCustom;
+      const costoEnvioFinal = envioGratis ? "G" : costoEnvioCustom
 
-      // Crear el objeto con la estructura exacta que espera tu API Spring Boot
+      // Crear el objeto con la estructura exacta que espera la API Spring Boot
       const submitData = {
         instrumento: formData.instrumento,
         marca: formData.marca,
@@ -208,22 +229,21 @@ export const InstrumentoForm = ({
         categoria: {
           id: Number.parseInt(formData.idCategoria),
         },
-      };
-
+      }
 
       // Guardar el instrumento y obtener la respuesta
-      const response = await onSubmit(submitData);
+      const response = (await onSubmit(submitData)) as SubmitResponse
 
       // Obtener el ID del instrumento (puede venir de diferentes formas según la respuesta)
-      let instrumentoId: number | null = null;
+      let instrumentoId: number | null = null
 
       if (response?.data?.id) {
-        instrumentoId = response.data.id;
+        instrumentoId = response.data.id
       } else if (response?.id) {
-        instrumentoId = response.id;
+        instrumentoId = response.id
       } else if (instrumento?.id) {
         // Si estamos editando, usar el ID existente
-        instrumentoId = instrumento.id;
+        instrumentoId = instrumento.id
       }
 
       // Si hay una imagen seleccionada y tenemos un ID, subirla
@@ -234,215 +254,221 @@ export const InstrumentoForm = ({
             selectedFile,
             formData.instrumento,
             true,
-          );
+          )
 
           // Actualizar el preview con la nueva imagen subida
           if (uploadResponse.success && uploadResponse.data) {
             setImagePreview(
               imageService.getImageUrl(uploadResponse.data.imageUrl),
-            );
-            setCurrentImageId(uploadResponse.data.id);
+            )
+            setCurrentImageId(uploadResponse.data.id)
           }
         } catch (imageError) {
-          console.error("Error subiendo imagen:", imageError);
-          alert(
+          console.error("Error subiendo imagen:", imageError)
+          toast.error(
             "El instrumento se guardó correctamente, pero hubo un error al subir la imagen. Puedes editarlo después para agregar la imagen.",
-          );
+          )
         }
       }
 
       // Cerrar el formulario después de un guardado exitoso
       setTimeout(() => {
-        onCancel(); // Esto cierra el formulario y vuelve a la lista
-      }, 1000);
+        onCancel() // Esto cierra el formulario y vuelve a la lista
+      }, 1000)
     } catch (error) {
-      console.error("Error en submit:", error);
-      alert("Error al guardar el instrumento: " + error);
+      console.error("Error en submit:", error)
+      toast.error("Error al guardar el instrumento: " + error)
     } finally {
-      setIsSubmitting(false);
+      setIsSubmitting(false)
     }
-  };
+  }
 
   const handleChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
     >,
   ) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    const { name, value } = e.target
+    setFormData((prev) => ({ ...prev, [name]: value }))
 
     // Limpiar error del campo cuando el usuario empiece a escribir
     if (errors[name]) {
-      setErrors((prev) => ({ ...prev, [name]: "" }));
+      setErrors((prev) => ({ ...prev, [name]: "" }))
     }
-  };
+  }
+
+  const handleCategoriaChange = (value: string) => {
+    setFormData((prev) => ({ ...prev, idCategoria: value }))
+    if (errors.idCategoria) {
+      setErrors((prev) => ({ ...prev, idCategoria: "" }))
+    }
+  }
 
   const handleEnvioChange = (esGratis: boolean) => {
-    setEnvioGratis(esGratis);
+    setEnvioGratis(esGratis)
     if (esGratis) {
-      setCostoEnvioCustom("");
-      setErrors((prev) => ({ ...prev, costoEnvio: "" }));
+      setCostoEnvioCustom("")
+      setErrors((prev) => ({ ...prev, costoEnvio: "" }))
     }
-  };
+  }
+
+  const errorText = (key: string) =>
+    errors[key] ? (
+      <p className="text-xs text-destructive">{errors[key]}</p>
+    ) : null
 
   return (
-    <div className="form-container">
-      <div className="form-header">
-        <h1 className="section-title">
-          {instrumento ? "Editar Instrumento" : "Crear Nuevo Instrumento"}
-        </h1>
-      </div>
+    <section className="mx-auto w-full max-w-4xl px-4 py-10">
+      <h1 className="font-display text-2xl font-bold tracking-tight text-foreground">
+        {instrumento ? "Editar Instrumento" : "Crear Nuevo Instrumento"}
+      </h1>
 
-      <form onSubmit={handleSubmit} className="instrumento-form">
-        <div className="form-grid">
-          <div className="form-group">
-            <label htmlFor="instrumento">
-              Instrumento <span className="required">*</span>
-            </label>
-            <input
+      <form onSubmit={handleSubmit} className="mt-6 grid gap-6">
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="instrumento">
+              Instrumento <span className="text-destructive">*</span>
+            </Label>
+            <Input
               type="text"
               id="instrumento"
               name="instrumento"
               value={formData.instrumento}
               onChange={handleChange}
-              className={errors.instrumento ? "error" : ""}
+              aria-invalid={Boolean(errors.instrumento)}
               placeholder="Ej: Guitarra Acústica"
             />
-            {errors.instrumento && (
-              <span className="error-message">{errors.instrumento}</span>
-            )}
+            {errorText("instrumento")}
           </div>
 
-          <div className="form-group">
-            <label htmlFor="marca">
-              Marca <span className="required">*</span>
-            </label>
-            <input
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="marca">
+              Marca <span className="text-destructive">*</span>
+            </Label>
+            <Input
               type="text"
               id="marca"
               name="marca"
               value={formData.marca}
               onChange={handleChange}
-              className={errors.marca ? "error" : ""}
+              aria-invalid={Boolean(errors.marca)}
               placeholder="Ej: Yamaha"
             />
-            {errors.marca && (
-              <span className="error-message">{errors.marca}</span>
-            )}
+            {errorText("marca")}
           </div>
 
-          <div className="form-group">
-            <label htmlFor="modelo">
-              Modelo <span className="required">*</span>
-            </label>
-            <input
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="modelo">
+              Modelo <span className="text-destructive">*</span>
+            </Label>
+            <Input
               type="text"
               id="modelo"
               name="modelo"
               value={formData.modelo}
               onChange={handleChange}
-              className={errors.modelo ? "error" : ""}
+              aria-invalid={Boolean(errors.modelo)}
               placeholder="Ej: FG800"
             />
-            {errors.modelo && (
-              <span className="error-message">{errors.modelo}</span>
-            )}
+            {errorText("modelo")}
           </div>
 
-          <div className="form-group">
-            <label htmlFor="idCategoria">
-              Categoría <span className="required">*</span>
-            </label>
-            <select
-              id="idCategoria"
-              name="idCategoria"
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="idCategoria">
+              Categoría <span className="text-destructive">*</span>
+            </Label>
+            <Select
               value={formData.idCategoria}
-              onChange={handleChange}
-              className={errors.idCategoria ? "error" : ""}
+              onValueChange={handleCategoriaChange}
             >
-              <option value="">Seleccionar categoría</option>
-              {categorias.map((categoria) => (
-                <option key={categoria.id} value={categoria.id}>
-                  {categoria.denominacion}
-                </option>
-              ))}
-            </select>
-            {errors.idCategoria && (
-              <span className="error-message">{errors.idCategoria}</span>
-            )}
+              <SelectTrigger
+                id="idCategoria"
+                className="w-full"
+                aria-invalid={Boolean(errors.idCategoria)}
+              >
+                <SelectValue placeholder="Seleccionar categoría" />
+              </SelectTrigger>
+              <SelectContent>
+                {categorias.map((categoria) => (
+                  <SelectItem key={categoria.id} value={categoria.id.toString()}>
+                    {categoria.denominacion}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {errorText("idCategoria")}
           </div>
 
-          <div className="form-group">
-            <label htmlFor="precio">
-              Precio <span className="required">*</span>
-            </label>
-            <div className="input-with-prefix">
-              <span className="input-prefix">$</span>
-              <input
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="precio">
+              Precio <span className="text-destructive">*</span>
+            </Label>
+            <div className="relative">
+              <span className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
+                $
+              </span>
+              <Input
                 type="number"
                 id="precio"
                 name="precio"
                 value={formData.precio}
                 onChange={handleChange}
-                className={errors.precio ? "error" : ""}
+                aria-invalid={Boolean(errors.precio)}
                 placeholder="25000"
                 min="0"
                 step="0.01"
+                className="pl-6"
               />
             </div>
-            {errors.precio && (
-              <span className="error-message">{errors.precio}</span>
-            )}
+            {errorText("precio")}
           </div>
 
-          <div className="form-group">
-            <label>Costo de Envío</label>
-            <div className="radio-group">
-              <label className="radio-option">
+          <div className="flex flex-col gap-1.5">
+            <span className="text-sm font-medium">Costo de Envío</span>
+            <div className="flex flex-wrap items-center gap-4 pt-1">
+              <label className="flex cursor-pointer items-center gap-2 text-sm">
                 <input
                   type="radio"
                   name="envioType"
+                  className="size-4 accent-primary"
                   checked={envioGratis}
                   onChange={() => handleEnvioChange(true)}
                 />
-                <span className="radio-custom"></span>
                 Envío gratis
               </label>
-              <label className="radio-option">
+              <label className="flex cursor-pointer items-center gap-2 text-sm">
                 <input
                   type="radio"
                   name="envioType"
+                  className="size-4 accent-primary"
                   checked={!envioGratis}
                   onChange={() => handleEnvioChange(false)}
                 />
-                <span className="radio-custom"></span>
                 Con costo
               </label>
             </div>
             {!envioGratis && (
-              <div
-                className="input-with-prefix"
-                style={{ marginTop: "0.5rem" }}
-              >
-                <span className="input-prefix">$</span>
-                <input
+              <div className="relative mt-1">
+                <span className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
+                  $
+                </span>
+                <Input
                   type="number"
                   value={costoEnvioCustom}
                   onChange={(e) => setCostoEnvioCustom(e.target.value)}
-                  className={errors.costoEnvio ? "error" : ""}
+                  aria-invalid={Boolean(errors.costoEnvio)}
                   placeholder="1500"
                   min="0"
+                  className="pl-6"
                 />
               </div>
             )}
-            {errors.costoEnvio && (
-              <span className="error-message">{errors.costoEnvio}</span>
-            )}
+            {errorText("costoEnvio")}
           </div>
 
-          <div className="form-group">
-            <label htmlFor="cantidadVendida">Cantidad Vendida</label>
-            <input
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="cantidadVendida">Cantidad Vendida</Label>
+            <Input
               type="number"
               id="cantidadVendida"
               name="cantidadVendida"
@@ -453,69 +479,103 @@ export const InstrumentoForm = ({
             />
           </div>
 
-          <div className="form-group full-width">
-            <label>Imagen del Producto</label>
-            <div className="image-upload-container">
-              <div className="image-preview">
+          <div className="flex flex-col gap-2 sm:col-span-2">
+            <span className="text-sm font-medium">Imagen del Producto</span>
+            <div className="flex flex-col gap-4 rounded-xl border border-border p-4 sm:flex-row">
+              <div className="flex aspect-video w-full max-w-52 items-center justify-center overflow-hidden rounded-lg bg-muted sm:aspect-square">
                 {imagePreview ? (
                   <img
-                    src={imagePreview || "/placeholder.svg"}
-                    alt="Preview"
-                    className="preview-image"
+                    src={imagePreview}
+                    alt="Previsualización de la imagen del producto"
+                    className="size-full object-cover"
                   />
                 ) : (
-                  <div className="preview-placeholder">
-                    <span>📷</span>
-                    <p>Sin imagen</p>
+                  <div className="flex flex-col items-center gap-1 text-muted-foreground">
+                    <Image className="size-6" aria-hidden="true" />
+                    <p className="text-xs">Sin imagen</p>
                   </div>
                 )}
               </div>
-              <div className="image-upload-controls">
-                <div className="image-buttons">
-                  <button
+
+              <div className="flex flex-1 flex-col gap-2">
+                <div className="flex flex-wrap gap-2">
+                  <Button
                     type="button"
+                    variant="outline"
                     onClick={() => fileInputRef.current?.click()}
-                    className="btn btn-outline"
                   >
-                    📁 Seleccionar Imagen
-                  </button>
-                  {imagePreview && (
-                    <button
-                      type="button"
-                      onClick={handleDeleteImage}
-                      className="btn btn-danger"
-                      disabled={isDeleting}
-                    >
-                      {isDeleting ? "🗑️ Eliminando..." : "🗑️ Eliminar"}
-                    </button>
-                  )}
+                    <Upload aria-hidden="true" />
+                    Seleccionar imagen
+                  </Button>
+                  {imagePreview &&
+                    (currentImageId ? (
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            disabled={isDeleting}
+                          >
+                            <Trash2 aria-hidden="true" />
+                            {isDeleting ? "Eliminando..." : "Eliminar"}
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Eliminar imagen</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              ¿Estás seguro de que quieres eliminar esta imagen?
+                              Esta acción no se puede deshacer.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                            <AlertDialogAction
+                              variant="destructive"
+                              onClick={handleDeleteImage}
+                            >
+                              Eliminar
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    ) : (
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        onClick={handleDeleteImage}
+                        disabled={isDeleting}
+                      >
+                        <Trash2 aria-hidden="true" />
+                        Eliminar
+                      </Button>
+                    ))}
                 </div>
+
                 <input
                   ref={fileInputRef}
                   type="file"
                   accept="image/*"
                   onChange={handleFileSelect}
-                  style={{ display: "none" }}
+                  className="hidden"
                 />
-                <small className="form-help">
+                <p className="text-xs text-muted-foreground">
                   Formatos: JPG, PNG, GIF. Máximo 5MB.
-                </small>
+                </p>
                 {selectedFile && (
-                  <small
-                    className="form-help"
-                    style={{ color: "var(--color-primary)" }}
-                  >
-                    ✓ Archivo seleccionado: {selectedFile.name}
-                  </small>
+                  <p className="flex items-center gap-1.5 text-xs text-primary">
+                    <Check className="size-3.5" aria-hidden="true" />
+                    Archivo seleccionado: {selectedFile.name}
+                  </p>
                 )}
               </div>
             </div>
           </div>
         </div>
 
-        <div className="form-group full-width">
-          <label htmlFor="descripcion">Descripción</label>
-          <textarea
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="descripcion">Descripción</Label>
+          <Textarea
             id="descripcion"
             name="descripcion"
             value={formData.descripcion}
@@ -525,28 +585,24 @@ export const InstrumentoForm = ({
           />
         </div>
 
-        <div className="form-actions">
-          <button
+        <div className="flex justify-end gap-2">
+          <Button
             type="button"
+            variant="outline"
             onClick={onCancel}
-            className="btn btn-outline"
             disabled={isSubmitting}
           >
             Cancelar
-          </button>
-          <button
-            type="submit"
-            className="btn btn-primary"
-            disabled={isSubmitting}
-          >
+          </Button>
+          <Button type="submit" disabled={isSubmitting}>
             {isSubmitting
               ? "Guardando..."
               : instrumento
                 ? "Actualizar"
                 : "Crear"}
-          </button>
+          </Button>
         </div>
       </form>
-    </div>
-  );
-};
+    </section>
+  )
+}

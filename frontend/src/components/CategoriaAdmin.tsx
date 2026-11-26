@@ -1,9 +1,33 @@
 import type React from "react"
-
 import { useState } from "react"
+import { ArrowLeft, Pencil, Plus, Trash2 } from "lucide-react"
+import { toast } from "sonner"
+
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
 import type { Categoria } from "../types/Categoria"
 import { categoriaService } from "../services/api"
-import "./CategoriaAdmin.css"
 
 interface CategoriaAdminProps {
   categorias: Categoria[]
@@ -11,9 +35,15 @@ interface CategoriaAdminProps {
   onBack: () => void
 }
 
-export const CategoriaAdmin = ({ categorias, setCategorias, onBack }: CategoriaAdminProps) => {
+export const CategoriaAdmin = ({
+  categorias,
+  setCategorias,
+  onBack,
+}: CategoriaAdminProps) => {
   const [showForm, setShowForm] = useState(false)
-  const [editingCategoria, setEditingCategoria] = useState<Categoria | null>(null)
+  const [editingCategoria, setEditingCategoria] = useState<Categoria | null>(
+    null,
+  )
   const [formData, setFormData] = useState({ denominacion: "" })
   const [errors, setErrors] = useState<{ [key: string]: string }>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -33,10 +63,6 @@ export const CategoriaAdmin = ({ categorias, setCategorias, onBack }: CategoriaA
   }
 
   const handleDelete = async (id: number) => {
-    if (!confirm("¿Estás seguro de que quieres eliminar esta categoría?")) {
-      return
-    }
-
     try {
       const response = await categoriaService.delete(id)
       if (response.success) {
@@ -45,7 +71,7 @@ export const CategoriaAdmin = ({ categorias, setCategorias, onBack }: CategoriaA
         throw new Error(response.message || "Error al eliminar")
       }
     } catch (error) {
-      alert("Error al eliminar categoría: " + error)
+      toast.error("Error al eliminar categoría: " + error)
     }
   }
 
@@ -78,12 +104,15 @@ export const CategoriaAdmin = ({ categorias, setCategorias, onBack }: CategoriaA
         response = await categoriaService.create(formData)
       }
 
-
       if (response.success && response.data) {
         const savedCategoria = response.data
 
         if (editingCategoria) {
-          setCategorias(categorias.map((cat) => (cat.id === editingCategoria.id ? savedCategoria : cat)))
+          setCategorias(
+            categorias.map((cat) =>
+              cat.id === editingCategoria.id ? savedCategoria : cat,
+            ),
+          )
         } else {
           setCategorias([...categorias, savedCategoria])
         }
@@ -96,7 +125,7 @@ export const CategoriaAdmin = ({ categorias, setCategorias, onBack }: CategoriaA
       }
     } catch (error) {
       console.error("Error al guardar:", error)
-      alert("Error al guardar categoría: " + error)
+      toast.error("Error al guardar categoría: " + error)
     } finally {
       setIsSubmitting(false)
     }
@@ -118,100 +147,180 @@ export const CategoriaAdmin = ({ categorias, setCategorias, onBack }: CategoriaA
     }
   }
 
+  const renderActions = (categoria: Categoria) => (
+    <div className="flex items-center justify-end gap-1">
+      <Button
+        type="button"
+        variant="ghost"
+        size="icon-sm"
+        aria-label={`Editar ${categoria.denominacion}`}
+        onClick={() => handleEdit(categoria)}
+      >
+        <Pencil aria-hidden="true" />
+      </Button>
+      <AlertDialog>
+        <AlertDialogTrigger asChild>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-sm"
+            aria-label={`Eliminar ${categoria.denominacion}`}
+          >
+            <Trash2 aria-hidden="true" />
+          </Button>
+        </AlertDialogTrigger>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Eliminar categoría</AlertDialogTitle>
+            <AlertDialogDescription>
+              ¿Estás seguro de que quieres eliminar la categoría "
+              {categoria.denominacion}"? Esta acción no se puede deshacer.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              variant="destructive"
+              onClick={() => handleDelete(categoria.id)}
+            >
+              Eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
+  )
+
   if (showForm) {
     return (
-      <div className="categoria-form-container">
-        <div className="form-header">
-          <h1 className="section-title">{editingCategoria ? "Editar Categoría" : "Crear Nueva Categoría"}</h1>
-        </div>
+      <section className="mx-auto w-full max-w-2xl px-4 py-10">
+        <h1 className="font-display text-2xl font-bold tracking-tight text-foreground">
+          {editingCategoria ? "Editar Categoría" : "Crear Nueva Categoría"}
+        </h1>
 
-        <form onSubmit={handleSubmit} className="categoria-form">
-          <div className="form-group">
-            <label htmlFor="denominacion">
-              Denominación <span className="required">*</span>
-            </label>
-            <input
-              type="text"
-              id="denominacion"
-              name="denominacion"
-              value={formData.denominacion}
-              onChange={handleChange}
-              className={errors.denominacion ? "error" : ""}
-              placeholder="Ej: Cuerda, Viento, Percusión..."
-            />
-            {errors.denominacion && <span className="error-message">{errors.denominacion}</span>}
-          </div>
+        <Card className="mt-6">
+          <CardContent>
+            <form onSubmit={handleSubmit} className="grid gap-4">
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="denominacion">
+                  Denominación <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  type="text"
+                  id="denominacion"
+                  name="denominacion"
+                  value={formData.denominacion}
+                  onChange={handleChange}
+                  aria-invalid={Boolean(errors.denominacion)}
+                  placeholder="Ej: Cuerda, Viento, Percusión..."
+                />
+                {errors.denominacion && (
+                  <p className="text-xs text-destructive">
+                    {errors.denominacion}
+                  </p>
+                )}
+              </div>
 
-          <div className="form-actions">
-            <button type="button" onClick={handleCancel} className="btn btn-outline" disabled={isSubmitting}>
-              Cancelar
-            </button>
-            <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
-              {isSubmitting ? "Guardando..." : editingCategoria ? "Actualizar" : "Crear"}
-            </button>
-          </div>
-        </form>
-      </div>
+              <div className="flex justify-end gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleCancel}
+                  disabled={isSubmitting}
+                >
+                  Cancelar
+                </Button>
+                <Button type="submit" disabled={isSubmitting}>
+                  {isSubmitting
+                    ? "Guardando..."
+                    : editingCategoria
+                      ? "Actualizar"
+                      : "Crear"}
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+      </section>
     )
   }
 
   return (
-    <div className="categoria-admin-container">
-      <div className="admin-header">
-        <h1 className="section-title">Administración de Categorías</h1>
-        <div className="admin-buttons">
-          <button className="btn btn-outline" onClick={onBack}>
-            ← Volver a Instrumentos
-          </button>
-          <button className="btn btn-primary" onClick={handleCreate}>
-            Crear Nueva Categoría
-          </button>
+    <section className="mx-auto w-full max-w-5xl px-4 py-10">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <h1 className="font-display text-2xl font-bold tracking-tight text-foreground">
+          Administración de Categorías
+        </h1>
+        <div className="flex flex-wrap gap-2">
+          <Button variant="outline" onClick={onBack}>
+            <ArrowLeft aria-hidden="true" />
+            Volver a instrumentos
+          </Button>
+          <Button onClick={handleCreate}>
+            <Plus aria-hidden="true" />
+            Crear categoría
+          </Button>
         </div>
       </div>
 
-      <div className="admin-stats">
-        <span>Total de categorías: {categorias.length}</span>
+      <p className="mt-4 text-sm text-muted-foreground">
+        Total de categorías: {categorias.length}
+      </p>
+
+      <div className="mt-4 hidden md:block">
+        <Card>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-20">ID</TableHead>
+                  <TableHead>Denominación</TableHead>
+                  <TableHead className="text-right">Acciones</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {categorias.map((categoria) => (
+                  <TableRow key={categoria.id}>
+                    <TableCell>{categoria.id}</TableCell>
+                    <TableCell className="font-medium">
+                      {categoria.denominacion}
+                    </TableCell>
+                    <TableCell>{renderActions(categoria)}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+            {categorias.length === 0 && (
+              <p className="py-6 text-center text-sm text-muted-foreground">
+                No hay categorías registradas.
+              </p>
+            )}
+          </CardContent>
+        </Card>
       </div>
 
-      <div className="admin-table-container">
-        <table className="admin-table">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Denominación</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            {categorias.map((categoria) => (
-              <tr key={categoria.id}>
-                <td>{categoria.id}</td>
-                <td className="table-name">{categoria.denominacion}</td>
-                <td>
-                  <div className="table-actions">
-                    <button className="btn-action btn-edit" onClick={() => handleEdit(categoria)} title="Editar">
-                      ✏️
-                    </button>
-                    <button
-                      className="btn-action btn-delete"
-                      onClick={() => handleDelete(categoria.id)}
-                      title="Eliminar"
-                    >
-                      🗑️
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-
+      <div className="mt-4 grid gap-3 md:hidden">
+        {categorias.map((categoria) => (
+          <Card key={categoria.id} size="sm">
+            <CardContent className="flex items-center justify-between gap-3">
+              <div>
+                <p className="font-medium text-foreground">
+                  {categoria.denominacion}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  ID {categoria.id}
+                </p>
+              </div>
+              {renderActions(categoria)}
+            </CardContent>
+          </Card>
+        ))}
         {categorias.length === 0 && (
-          <div className="no-results">
-            <p>No hay categorías registradas.</p>
-          </div>
+          <p className="py-6 text-center text-sm text-muted-foreground">
+            No hay categorías registradas.
+          </p>
         )}
       </div>
-    </div>
+    </section>
   )
 }
