@@ -103,12 +103,14 @@ Implementados en `backend/src/main/java/com/symphoniac/controller/`.
 ## Calidad
 
 ```bash
-cd frontend && npm ci && npm run build && npm run lint   # frontend
-cd backend && ./mvnw -DskipTests package                 # backend (Windows: .\mvnw.cmd)
+cd frontend && npm ci && npm run lint && npm run test && npm run build   # frontend
+cd backend && ./mvnw verify                                              # backend (Windows: .\mvnw.cmd)
 ```
 
-Tests automáticos: un `contextLoads` en el backend; sin tests de frontend ni CI
-todavía.
+El backend corre tests unitarios y de integración con PostgreSQL efímero
+(Testcontainers, requiere Docker); el frontend usa Vitest + Testing Library y
+Playwright cubre los flujos E2E contra el stack demo. El detalle de la suite, los
+comandos y la CI está en `docs/testing.md`.
 
 ## Estado
 
