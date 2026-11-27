@@ -314,9 +314,11 @@ export const InstrumentoForm = ({
     }
   }
 
-  const errorText = (key: string) =>
+  const errorText = (key: string, id: string) =>
     errors[key] ? (
-      <p className="text-xs text-destructive">{errors[key]}</p>
+      <p id={id} role="alert" className="text-xs text-destructive">
+        {errors[key]}
+      </p>
     ) : null
 
   return (
@@ -341,9 +343,12 @@ export const InstrumentoForm = ({
               value={formData.instrumento}
               onChange={handleChange}
               aria-invalid={Boolean(errors.instrumento)}
+              aria-describedby={
+                errors.instrumento ? "instrumento-error" : undefined
+              }
               placeholder="Ej: Guitarra Acústica"
             />
-            {errorText("instrumento")}
+            {errorText("instrumento", "instrumento-error")}
           </div>
 
           <div className="flex flex-col gap-1.5">
@@ -357,9 +362,10 @@ export const InstrumentoForm = ({
               value={formData.marca}
               onChange={handleChange}
               aria-invalid={Boolean(errors.marca)}
+              aria-describedby={errors.marca ? "marca-error" : undefined}
               placeholder="Ej: Yamaha"
             />
-            {errorText("marca")}
+            {errorText("marca", "marca-error")}
           </div>
 
           <div className="flex flex-col gap-1.5">
@@ -373,9 +379,10 @@ export const InstrumentoForm = ({
               value={formData.modelo}
               onChange={handleChange}
               aria-invalid={Boolean(errors.modelo)}
+              aria-describedby={errors.modelo ? "modelo-error" : undefined}
               placeholder="Ej: FG800"
             />
-            {errorText("modelo")}
+            {errorText("modelo", "modelo-error")}
           </div>
 
           <div className="flex flex-col gap-1.5">
@@ -390,6 +397,9 @@ export const InstrumentoForm = ({
                 id="idCategoria"
                 className="w-full"
                 aria-invalid={Boolean(errors.idCategoria)}
+                aria-describedby={
+                  errors.idCategoria ? "idCategoria-error" : undefined
+                }
               >
                 <SelectValue placeholder="Seleccionar categoría" />
               </SelectTrigger>
@@ -401,7 +411,7 @@ export const InstrumentoForm = ({
                 ))}
               </SelectContent>
             </Select>
-            {errorText("idCategoria")}
+            {errorText("idCategoria", "idCategoria-error")}
           </div>
 
           <div className="flex flex-col gap-1.5">
@@ -419,13 +429,14 @@ export const InstrumentoForm = ({
                 value={formData.precio}
                 onChange={handleChange}
                 aria-invalid={Boolean(errors.precio)}
+                aria-describedby={errors.precio ? "precio-error" : undefined}
                 placeholder="25000"
                 min="0"
                 step="0.01"
                 className="pl-6"
               />
             </div>
-            {errorText("precio")}
+            {errorText("precio", "precio-error")}
           </div>
 
           <div className="flex flex-col gap-1.5">
@@ -459,16 +470,21 @@ export const InstrumentoForm = ({
                 </span>
                 <Input
                   type="number"
+                  id="costoEnvio"
+                  aria-label="Costo de envío"
                   value={costoEnvioCustom}
                   onChange={(e) => setCostoEnvioCustom(e.target.value)}
                   aria-invalid={Boolean(errors.costoEnvio)}
+                  aria-describedby={
+                    errors.costoEnvio ? "costoEnvio-error" : undefined
+                  }
                   placeholder="1500"
                   min="0"
                   className="pl-6"
                 />
               </div>
             )}
-            {errorText("costoEnvio")}
+            {errorText("costoEnvio", "costoEnvio-error")}
           </div>
 
           <div className="flex flex-col gap-1.5">

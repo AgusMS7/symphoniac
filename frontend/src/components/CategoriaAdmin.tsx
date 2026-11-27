@@ -213,10 +213,17 @@ export const CategoriaAdmin = ({
                   value={formData.denominacion}
                   onChange={handleChange}
                   aria-invalid={Boolean(errors.denominacion)}
+                  aria-describedby={
+                    errors.denominacion ? "denominacion-error" : undefined
+                  }
                   placeholder="Ej: Cuerda, Viento, Percusión..."
                 />
                 {errors.denominacion && (
-                  <p className="text-xs text-destructive">
+                  <p
+                    id="denominacion-error"
+                    role="alert"
+                    className="text-xs text-destructive"
+                  >
                     {errors.denominacion}
                   </p>
                 )}
