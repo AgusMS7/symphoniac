@@ -20,6 +20,8 @@ reservados.
 - Inter, Bricolage Grotesque e IBM Plex Mono — SIL Open Font License 1.1
 - Fotos de referencia de Unsplash — Unsplash License; detalle en
   [public/site/CREDITS.md](./public/site/CREDITS.md)
+- Fotos de seed de Pexels — Pexels License; detalle en
+  [backend/src/main/resources/static/images/CREDITS.md](./backend/src/main/resources/static/images/CREDITS.md)
 - Logo: SVG Repo — open source
 
 Las dependencias de backend (Spring Boot, PostgreSQL y librerías asociadas)

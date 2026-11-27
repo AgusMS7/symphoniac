@@ -4,6 +4,12 @@ test.describe("fallback de imágenes", () => {
   test("muestra la etiqueta de referencia cuando la imagen no existe", async ({
     page,
   }) => {
+    // Fuerza un 404 para un archivo deliberadamente inexistente, sin depender
+    // de que falte una imagen real del seed.
+    await page.route("**/images/acoustic-guitar.jpg", (route) =>
+      route.fulfill({ status: 404, body: "" }),
+    )
+
     await page.goto("/instrumento/11")
 
     await expect(
@@ -13,7 +19,6 @@ test.describe("fallback de imágenes", () => {
       }),
     ).toBeVisible()
 
-    // La imagen del seed no existe: el onError debe caer al placeholder.
     await expect(page.getByText("Imagen de referencia")).toBeVisible()
     await expect(
       page.getByRole("img", { name: "Guitarra Acústica Yamaha" }),

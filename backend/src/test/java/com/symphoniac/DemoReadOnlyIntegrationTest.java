@@ -81,7 +81,7 @@ class DemoReadOnlyIntegrationTest extends AbstractPostgresIntegrationTest {
 
     @Test
     void lasImagenesSiguenDisponiblesEnDemo() throws Exception {
-        mockMvc.perform(get("/images/nro1.jpg"))
+        mockMvc.perform(get("/images/percussion-set.jpg"))
                 .andExpect(status().isOk());
     }
 }
