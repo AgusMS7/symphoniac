@@ -1,13 +1,12 @@
 import { ArrowRight, Play, Plus, Volume2 } from "lucide-react"
 
+import { imageUrl, type Product } from "./data"
 import {
   DirectionIntro,
   DpButton,
   MiniNav,
   SectionLabel,
   Stat,
-  imageUrl,
-  type Product,
 } from "./shared"
 
 const products: Product[] = [

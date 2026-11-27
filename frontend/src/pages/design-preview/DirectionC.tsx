@@ -7,14 +7,8 @@ import {
   Truck,
 } from "lucide-react"
 
-import {
-  DirectionIntro,
-  DpButton,
-  MiniNav,
-  Stat,
-  imageUrl,
-  type Product,
-} from "./shared"
+import { imageUrl, type Product } from "./data"
+import { DirectionIntro, DpButton, MiniNav, Stat } from "./shared"
 
 const products: Product[] = [
   {
