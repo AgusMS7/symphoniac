@@ -1,123 +1,138 @@
-# Pruebas
+# Tests
 
-## Cobertura
+La suite cubre backend, frontend y flujo E2E. Los números vigentes son 22 tests
+de backend, 89 de frontend y 9 E2E: 120 en total. Este documento explica qué
+cubre cada capa, cómo correrla y qué queda afuera.
 
-### Backend
+## Resumen
 
-- **Unitarios de servicio** (`InstrumentoServiceTest`, Mockito): resolución de la
-  categoría desde la relación o desde `idCategoria`, y error de negocio cuando la
-  categoría no existe.
-- **Controller slice** (`@WebMvcTest`, `InstrumentoControllerTest`): `POST` y
-  `PUT` devuelven `400` cuando la categoría no existe.
-- **Integración** (`@SpringBootTest` + Testcontainers con `postgres:17`):
-  `InstrumentoApiIntegrationTest` valida el esquema y el seed reales (30
-  instrumentos, búsqueda, filtro por categoría, detalle, `404`, validación `400`,
-  categorías e imágenes); `DemoReadOnlyIntegrationTest` valida el perfil demo
-  (`405` en escrituras, lecturas e imágenes disponibles); `contextLoads` verifica
-  el arranque del contexto.
-- La base es efímera: `backend/db/schema.sql` y `backend/db/seed.sql` se copian
-  al contenedor en cada corrida. No se toca ninguna base existente.
+| Capa | Herramienta | Cantidad | Qué valida |
+|---|---|---|---|
+| Backend | JUnit + Mockito + MockMvc + Testcontainers | 22 | Contrato REST, persistencia real, validación y demo 405 |
+| Frontend | Vitest + Testing Library + jsdom | 89 | Servicios, overlay, storage, componentes y fallback |
+| E2E | Playwright (Chromium) | 9 | Catálogo, admin, detalle, carrito, favoritos, reset y fallback |
 
-### Frontend
+## Backend
 
-- **Unitarios**: `storage` (claves y serialización), `localStore`
-  (favoritos/carrito/envío), `overlay` (fusión de cambios locales),
-  `remoteBackend` (fetch mockeado), `demoBackend` (CRUD demo con
-  `remoteBackend` mockeado), `backend` (selección demo/remote según `IS_DEMO`)
-  e `imageUtils` (URL, alt, placeholder y carga segura).
-- **Componentes** (Testing Library + jsdom): `InstrumentoCard`, `cart-drawer`
-  (estado vacío, líneas, envío gratis y con costo, total y acciones) e
-  `InstrumentoForm` (validación, precarga y payload de alta/edición).
+Los tests de integración usan **Testcontainers** con `postgres:17` y copian
+`backend/db/schema.sql` y `backend/db/seed.sql` al directorio de inicialización.
+Así se valida el esquema real con `ddl-auto=validate`, no una aproximación con
+H2. Cada clase levanta su propio contenedor.
 
-### E2E
+| Clase | Tests | Foco |
+|---|---|---|
+| `SymphoniacBackendApplicationTests` | 1 | Carga de contexto |
+| `InstrumentoServiceTest` | 4 | Normalización de categoría y `BusinessException` |
+| `InstrumentoControllerTest` | 2 | `WebMvcTest`: error de negocio a 400 |
+| `InstrumentoApiIntegrationTest` | 9 | Listado, búsqueda, filtro, detalle, 404, validación, categorías e imágenes |
+| `DemoReadOnlyIntegrationTest` | 6 | Perfil `demo`: GET permitido y POST/PUT/DELETE con 405 |
 
-Playwright contra el stack demo (`docker compose`, `VITE_DEMO=true`) en
-`http://localhost:8081`:
+Comandos:
 
-- catálogo: home, 30 instrumentos paginados, búsqueda y filtro por categoría;
-- detalle y carrito: alta al carrito y checkout deshabilitado en demo;
-- favoritos: marcar, filtrar por favoritos y persistencia al recargar;
-- reset de la demo: borra favoritos y carrito y vuelve al catálogo del backend;
-- admin: listado, alta local del formulario (overlay) y verificación de que el
-  backend sigue con 30 instrumentos;
-- fallback de una imagen inexistente del seed.
+```powershell
+cd backend
+.\mvnw.cmd verify
+```
 
-## Política anti-flaky
-
-- Sin sleeps ni timeouts fijos en los tests: se espera el estado visible con el
-  auto-wait de Playwright (URL, headings, badges, conteos de filas/artículos).
-- El único polling acotado es el del CI para levantar el stack: reintenta
-  frontend/API hasta 60 veces con 5 s entre intentos y falla mostrando los logs
-  si no responde.
-- Reintentos solo en CI (`retries: 2`) y workers acotados (`workers: 2`); en
-  local no hay reintentos.
-- Datos semilla deterministas: 30 instrumentos, 10 por página y los conteos de
-  búsqueda/filtro (4/5) son contrato del seed, no valores incidentales.
-- `reducedMotion: "reduce"` en `playwright.config.ts` para estabilizar las
-  animaciones de `motion/react`.
-- Cada test E2E corre en un contexto limpio (localStorage vacío); el reset de la
-  demo se cubre explícitamente.
-
-## Comandos
-
-Backend (requiere Docker para Testcontainers):
+En Linux/macOS o CI:
 
 ```bash
 cd backend
-./mvnw verify          # Windows: .\mvnw.cmd verify
+sh ./mvnw -B verify
 ```
 
-Frontend:
+Docker debe estar corriendo. Testcontainers descarga y arranca `postgres:17`; la
+primera ejecución puede tardar.
+
+## Frontend
+
+Vitest corre con `jsdom` y Testing Library. Los tests viven junto al código
+(`*.test.ts`, `*.test.tsx`) y cubren:
+
+- `services/api` y el selector `data/backend.ts` (remoto vs demo).
+- `data/remoteBackend.ts`, `data/demoBackend.ts`, `data/overlay.ts`,
+  `data/localStore.ts` y `data/storage.ts`.
+- `InstrumentoCard`, `cart-drawer` e `InstrumentoForm`.
+- `utils/imageUtils.ts` y el fallback de imágenes.
+
+Comandos:
 
 ```bash
 cd frontend
 npm ci
-npm run lint
-npm run test
-npm run build
+npm run test        # una corrida
+npm run test:watch  # modo watch
 ```
 
-E2E (requiere el stack demo levantado):
+El coverage no tiene umbral obligatorio. El objetivo es cubrir la lógica de
+datos y los componentes con más riesgo, no perseguir un porcentaje.
+
+## E2E
+
+Playwright corre contra el stack demo en `http://localhost:8081`. La configuración
+usa Chromium, `reducedMotion: "reduce"`, `trace` en el primer reintento y
+screenshot solo en fallo. En CI hay 2 reintentos y 2 workers; localmente corre
+sin reintentos.
+
+| Archivo | Tests | Flujo |
+|---|---|---|
+| `catalog.spec.ts` | 4 | Home, 30 instrumentos paginados de a 10, búsqueda y filtro |
+| `admin.spec.ts` | 1 | Lista, crea un instrumento local y verifica que el backend sigue con 30 |
+| `detail-cart.spec.ts` | 1 | Detalle, agregar al carrito y checkout deshabilitado |
+| `favorites.spec.ts` | 1 | Favorito, filtro y persistencia al recargar |
+| `reset.spec.ts` | 1 | Borrar datos demo y volver al catálogo |
+| `image-fallback.spec.ts` | 1 | 404 deliberado de una imagen y fallback al placeholder |
+
+El fallback no depende de que falte una imagen real del seed: el test intercepta
+la request de `acoustic-guitar.jpg` y responde 404. Así el seed puede estar
+completo sin romper el caso.
 
 ```bash
 docker compose up -d --build
 cd frontend
-npx playwright install chromium
+npx playwright install chromium   # primera vez
 npm run test:e2e
-docker compose down -v
 ```
 
-`E2E_BASE_URL` permite apuntar a otra URL; el default es
-`http://localhost:8081`.
+La URL se puede cambiar con `E2E_BASE_URL`.
 
 ## CI
 
-`.github/workflows/ci.yml` corre en push a `main` y en pull requests:
+`.github/workflows/ci.yml` tiene tres jobs:
 
-| Job | Qué ejecuta |
-|---|---|
-| `backend` | JDK 17 (Temurin), cache Maven y `sh ./mvnw -B verify` |
-| `frontend` | Node 22, cache npm, `npm ci`, `npm audit --audit-level=high`, lint, tests y build |
-| `e2e` | Node 22, cache npm, cache de browsers de Playwright (`~/.cache/ms-playwright`), Chromium, `docker compose build`, `docker compose up -d`, espera de frontend/API y `npm run test:e2e`; sube `playwright-report` y baja el stack siempre |
+1. **backend**: Java 17, `sh ./mvnw -B verify` (Testcontainers usa Docker del
+   runner).
+2. **frontend**: Node 22, `npm ci`, `npm audit --audit-level=high`, lint, tests y
+   build.
+3. **e2e**: Node 22, `npm ci`, instala Chromium, `docker compose build` y
+   `up -d`, espera frontend/API, corre Playwright y sube el reporte; al final
+   baja el stack con `down -v`.
 
-El workflow declara `permissions: contents: read` a nivel global. No hay un job
-`docker` separado: la decisión Opción C deja el build de imágenes como pasos
-explícitos dentro de `e2e` (`docker compose build` y luego `docker compose up -d`),
-así que `e2e` es el gate de Docker.
+El job E2E depende de backend y frontend. El PR debe quedar verde en los tres.
 
-El job `e2e` depende de `backend` y `frontend`. Para bloquear el merge, los tres
-jobs deben marcarse como requeridos en la protección de rama del repositorio.
+## Anti-flaky
+
+- Seed determinista y Testcontainers por clase.
+- Playwright con `reducedMotion` y contextos nuevos por test.
+- El fallback usa un 404 explícito, no una imagen faltante del seed.
+- Sin esperas arbitrarias: se usan expectativas de Playwright.
+- Reintentos solo en CI; localmente un fallo se ve de inmediato.
+- Sin regresión visual: comparar capturas con motion y fuentes sería frágil y no
+  aporta al alcance.
+- `forbidOnly` en CI evita que un `test.only` deje la suite incompleta.
 
 ## Huecos
 
-- Sin regresión visual ni comparación de capturas.
-- El CRUD de escritura contra el backend no se prueba en E2E: el stack de CI
-  levanta el perfil demo, de solo lectura. El alta del admin se verifica solo en
-  el overlay local, con el backend intacto (30 instrumentos).
-- Sin E2E de subida o eliminación de imágenes (requiere modo no demo y
-  almacenamiento).
-- Sin umbral de cobertura ni reporte de coverage.
-- El contrato de categorías (DTO con `instrumentos`) queda fuera del alcance de
-  esta fase.
-- 20 de las 30 imágenes del seed no existen: el fallback está cubierto, no la
-  carga real de esas imágenes.
+- No hay umbral de cobertura ni reporte obligatorio.
+- No hay regresión visual automatizada.
+- Solo se prueba Chromium; no hay Safari/Firefox ni viewport mobile.
+- No hay pruebas de carga, estrés ni concurrencia.
+- No hay tests de autenticación porque no existe auth.
+- No hay smoke test del deploy real; se verifica en Fase 9.
+- No hay contrato OpenAPI ni tests de contrato entre frontend y backend.
+- Algunos controllers y servicios no tienen unit tests propios; se cubren por
+  integración.
+
+Ver [configuration.md](configuration.md) para requisitos y
+[troubleshooting.md](troubleshooting.md) para fallas de Testcontainers o del
+stack E2E.

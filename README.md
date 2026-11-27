@@ -1,138 +1,200 @@
 # Symphoniac
 
-> Tienda de instrumentos musicales: catálogo con búsqueda y filtros, detalle de
-> producto, panel de administración y API REST con imágenes y pedidos.
+> Catálogo de instrumentos con búsqueda, filtros y panel de administración, con
+> API REST y PostgreSQL. React 19 + Spring Boot 3.5, en un monorepo que se
+> levanta con Docker.
 
-Monorepo con el frontend (React + Vite) y el backend (Spring Boot + PostgreSQL).
-Se levanta completo con Docker Compose; la aplicación queda en
-`http://localhost:8081`.
+[![CI](https://github.com/AgusMS7/symphoniac/actions/workflows/ci.yml/badge.svg)](https://github.com/AgusMS7/symphoniac/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
 
-## Stack
+**[Ver código](https://github.com/AgusMS7/symphoniac)** · **[Contáctame](mailto:agustin.matias.sandoval@gmail.com)**
 
-| Capa | Tecnología |
-|---|---|
-| Frontend | React 19, TypeScript 5.9, Vite 7, React Router 7 |
-| Backend | Java 17, Spring Boot 3.5.x, Spring Data JPA, Bean Validation |
-| Base de datos | PostgreSQL 17+ |
-| Orquestación | Docker Compose (DB + backend + frontend) |
-| Build local | npm / Maven (wrapper incluido) |
+Demo de solo lectura, sin registro. 120 tests y CI en tres jobs.
 
-## Estructura
+React 19 · TypeScript · Spring Boot 3.5 · PostgreSQL 17 · Docker
 
-```
-symphoniac/
-  frontend/   Aplicación React (Vite). Páginas: catálogo, detalle, admin, ubicación.
-  backend/    API REST Spring Boot + SQL reproducible en backend/db/.
-  docker-compose.yml   Levanta DB, backend y frontend.
-```
+![Vista del catálogo de Symphoniac](docs/screenshots/home.png)
 
-## Requisitos
+## Por qué existe
 
-- Docker con Compose v2: camino recomendado, levanta todo el stack.
-- Para desarrollo híbrido sin contenedores: Node.js `^20.19.0 || >=22.12.0` y
-  Java 17+, además de exponer los puertos indicados más abajo.
+Empezó como trabajo práctico de Laboratorio de Computación 4 (UTN FRM, 2025),
+aprobado con 10. El pulido de portfolio agregó Docker Compose, tests de backend,
+frontend y E2E, CI y un sistema de diseño propio. La demo es de solo lectura a
+propósito: se recorre el catálogo y el panel sin escribir en la base. El objetivo
+es mostrar el ciclo completo de una aplicación, no operar una tienda real.
 
-## Cómo correrlo
+## Para quién es
 
-El stack completo se levanta con un solo comando:
+Para quien quiere ver un catálogo con panel de administración funcionando de
+punta a punta, no una maqueta: API, PostgreSQL, tests y una demo que se prueba
+sin riesgo. El dominio es una tienda de instrumentos; el interés está en cómo
+está construida.
 
-```bash
-docker compose up -d --build
-```
+## Qué hace
 
-Abrí **`http://localhost:8081`**. El puerto del host lo define `FRONT_PORT`
-(default `8081`). Verificación rápida: `curl http://localhost:8081/api/instrumentos`
-responde `200`.
+- Catálogo de 30 instrumentos con búsqueda, filtro por categoría, orden y
+  paginación de 10.
+- Ficha de producto con imagen principal, galería y datos de la categoría.
+- Panel de administración para instrumentos, categorías e imágenes; en local
+  escribe en PostgreSQL; en la demo no toca la base.
+- API REST con 24 endpoints, DTOs, validación y manejo global de errores.
+- Demo de solo lectura: el backend responde 405 a escrituras; carrito y
+  favoritos son locales.
+- Entorno reproducible con Docker Compose (PostgreSQL + backend + Nginx).
+- 120 tests y CI en tres jobs.
 
-La base de datos y la API **no se publican en el host**: viven en la red interna
-de Compose (`db:5432` y `backend:3001`). Eso evita conflictos con un PostgreSQL
-local y reduce la superficie expuesta. El esquema y los datos se aplican una sola
-vez, cuando el volumen se inicializa desde `backend/db/schema.sql` y
-`backend/db/seed.sql`.
+## Recorrido
 
-Para bajar y borrar los volúmenes (incluida la DB):
+![Inicio: hero y selección de instrumentos](docs/screenshots/home.png)
 
-```bash
-docker compose down -v
-```
+![Catálogo con búsqueda, filtros y paginación](docs/screenshots/productos.png)
 
-Después de `down -v`, la próxima inicialización vuelve a aplicar `schema.sql` y
-`seed.sql`. No corras `psql` sobre esa base: `schema.sql` no usa `IF NOT EXISTS`
-y volver a aplicarlo fallaría con "relation already exists".
+![Detalle de instrumento con galería y ficha técnica](docs/screenshots/detalle.png)
 
-### Desarrollo híbrido (opcional)
+![Carrito con subtotal, envío y pedidos locales](docs/screenshots/carrito.png)
 
-Si querés correr backend o frontend fuera de Docker, primero exponé en
-`docker-compose.yml` el puerto interno que necesites (`5432:5432` para la DB,
-`3001:3001` para la API) y después:
+![Panel de administración de instrumentos](docs/screenshots/admin.png)
 
-```bash
-cd backend && ./mvnw spring-boot:run        # API en 3001
-cd frontend && npm install && npm run dev   # front en 5173, proxy /api y /images
-```
+![Formulario de alta y edición de instrumentos](docs/screenshots/admin-form.png)
 
-Sin esos mapeos, los procesos locales no pueden alcanzar `db` ni `backend`: esos
-nombres solo resuelven dentro de la red de Compose.
+![Showroom, ubicación y contacto](docs/screenshots/donde-estamos.png)
 
-## Variables de entorno
+## Cómo se usa
 
-Solo nombres; los valores reales no se versionan.
+1. Levantá el stack local con `docker compose up -d --build`.
+2. Abrí `http://localhost:8081` y recorré el catálogo; probá la búsqueda y
+   agregá un instrumento al carrito.
+3. Entrá a `/admin` para ver el panel; en la demo el panel no escribe en la
+   base. La subida de imágenes está deshabilitada.
 
-| Archivo | Variable | Propósito |
+Resultado esperado: `http://localhost:8081` sirve la SPA; `/api/instrumentos`
+devuelve 30 instrumentos; `/images/acoustic-guitar.jpg` devuelve una imagen.
+El backend arranca con el perfil `demo`: las lecturas funcionan y las
+escrituras directas sobre `/api/**` responden 405.
+
+En la demo, el panel de administración se recorre y permite editar; los cambios
+se guardan en el navegador (`localStorage`), no en la base. El backend responde
+405 a cualquier escritura directa y la subida de imágenes está deshabilitada. Es
+una decisión de diseño: la demo no modifica datos reales.
+
+El esquema y el seed se aplican cuando se inicializa el volumen `pgdata`.
+`docker compose down -v` borra ese volumen y vuelve a sembrar la base en el
+próximo `up`; no lo uses sobre una base con datos que quieras conservar.
+
+## Cómo está construido
+
+| Capa | Tecnología | Rol |
 |---|---|---|
-| `.env` (raíz) | `DB_USER`, `DB_PASSWORD` | Usuario y password de PostgreSQL al crear el volumen |
-| `.env` (raíz) | `FRONT_PORT` | Puerto del frontend en el host (default `8081`) |
-| `backend/.env.example` | `DB_URL`, `DB_USER`, `DB_PASSWORD`, `PORT`, `CORS_ALLOWED_ORIGINS`, `UPLOAD_DIR` | Configuración del backend en desarrollo local |
-| `frontend/.env.example` | `VITE_API_URL`, `VITE_IMAGES_URL` | Bases de API e imágenes; en Docker usan `/api` e `/images` |
+| Frontend | React 19 + TypeScript 5.9 + Vite 7 | SPA con rutas lazy, Tailwind v4 y shadcn/ui |
+| Backend | Java 17 + Spring Boot 3.5.16 | API REST, JPA, validación, uploads |
+| Datos | PostgreSQL 17 | 5 tablas; esquema y seed reproducibles |
+| Orquestación | Docker Compose | db + backend + frontend + Nginx |
+| Tests | JUnit + Vitest + Playwright | 22 backend + 89 frontend + 9 E2E |
+| Deploy | Render + Neon + Vercel | Planificado; ver [despliegue](docs/deployment.md) |
 
-Los `.env.example` están versionados; los `.env` reales, no.
+```text
+navegador -> nginx (frontend:8080) -> /api/* -> backend:3001 -> PostgreSQL:5432
+                                  -> /images/* -> backend:3001
+```
 
-## API
+Decisiones con motivo:
 
-La API REST expone instrumentos, categorías, pedidos e imágenes.
+- **Compose para reproducibilidad.** Un comando levanta db, backend y frontend;
+  el esquema y el seed se aplican al crear el volumen.
+- **Nginx como único origen.** Evita CORS en el navegador y sirve la SPA y los
+  assets desde el mismo puerto.
+- **Perfil demo read-only.** El backend bloquea escrituras con 405; el frontend
+  guarda carrito, favoritos y cambios del panel en `localStorage`. La demo se
+  prueba sin riesgo.
+- **JPA `validate` + SQL versionado.** El esquema no se genera solo; se aplica
+  desde `backend/db/schema.sql` y `backend/db/seed.sql`.
+- **DTOs y manejo global de errores.** La API no expone entidades crudas y
+  responde con un sobre uniforme.
 
-| Recurso | Endpoints |
-|---|---|
-| Instrumentos | `GET /api/instrumentos` (paginación opcional) · `GET /api/instrumentos/{id}` · `POST /api/instrumentos` · `PUT /api/instrumentos/{id}` · `DELETE /api/instrumentos/{id}` · `GET /api/instrumentos/buscar?nombre=` · `GET /api/instrumentos/categoria/{id}` |
-| Categorías | `GET /api/categorias` · `GET /api/categorias/{id}` · `GET /api/categorias/search?denominacion=` · `POST /api/categorias` · `PUT /api/categorias/{id}` · `DELETE /api/categorias/{id}` |
-| Pedidos | `GET /api/pedidos` · `GET /api/pedidos/{id}` · `GET /api/pedidos/fecha?fecha=YYYY-MM-DD` · `POST /api/pedidos` · `DELETE /api/pedidos/{id}` |
-| Imágenes | `POST /api/images/upload/{instrumentoId}` · `GET /api/images/{filename}` · `GET /api/images/instrumento/{instrumentoId}` · `GET /api/images/instrumento/{instrumentoId}/primary` · `PUT /api/images/{imageId}/primary` · `DELETE /api/images/{imageId}` |
+## Números y evidencia
 
-Implementados en `backend/src/main/java/com/symphoniac/controller/`.
+| Dato | Valor | Cómo se verificó |
+|---|---|---|
+| Instrumentos | 30 | `backend/db/seed.sql` |
+| Categorías | 5 | `backend/db/seed.sql` |
+| Endpoints de API | 24 | controllers; excluye `GET /` de estado |
+| Tests backend | 22 | `.\mvnw.cmd test` |
+| Tests frontend | 89 | `npm run test` |
+| Tests E2E | 9 | `npm run test:e2e` |
+| Vulnerabilidades npm | 0 | `npm audit` (2026-11-27) |
+| Bundle de producción | Entry `index`: 265.48 kB (82.78 kB gzip); total emitido 887.66 kB | `npm run build` (2026-11-27) |
+
+Las imágenes de seed son fotografías de stock de Pexels; autor, URL y licencia
+están en
+[`backend/src/main/resources/static/images/CREDITS.md`](backend/src/main/resources/static/images/CREDITS.md).
+
+## Configuración
+
+| Variable | Requerida | Default | Propósito |
+|---|---|---|---|
+| `DB_USER` | Sí | `postgres` | Usuario de PostgreSQL |
+| `DB_PASSWORD` | Sí | — | Password de PostgreSQL |
+| `FRONT_PORT` | No | `8081` | Puerto del frontend en el host |
+| `DB_URL` | Sí | `jdbc:postgresql://db:5432/symphoniac` | Conexión JDBC |
+| `PORT` | No | `3001` | Puerto del backend |
+| `CORS_ALLOWED_ORIGINS` | No | `http://localhost:8081` | Orígenes permitidos |
+| `UPLOAD_DIR` | No | `/app/uploads` | Directorio de uploads |
+| `SPRING_PROFILES_ACTIVE` | No | `demo` | Perfil `demo` o `default` |
+| `VITE_API_URL` | No | `/api` | Base de la API en el frontend |
+| `VITE_IMAGES_URL` | No | `/images` | Base de imágenes en el frontend |
+| `VITE_DEMO` | No | `true` | Activa el modo demo |
+
+Solo nombres y defaults de desarrollo; nunca valores reales. Los `.env` reales
+no se versionan: se copian desde `.env.example`. Detalle en
+[configuración](docs/configuration.md).
 
 ## Calidad
 
 ```bash
-cd frontend && npm ci && npm run lint && npm run test && npm run build   # frontend
-cd backend && ./mvnw verify                                              # backend (Windows: .\mvnw.cmd)
+docker compose up -d --build
+.\mvnw.cmd verify
+cd frontend
+npm ci
+npm run lint
+npm run test
+npm run build
+npm run test:e2e
 ```
 
-El backend corre tests unitarios y de integración con PostgreSQL efímero
-(Testcontainers, requiere Docker); el frontend usa Vitest + Testing Library y
-Playwright cubre los flujos E2E contra el stack demo. El detalle de la suite, los
-comandos y la CI está en `docs/testing.md`.
+CI en GitHub Actions: 3 jobs (`backend`, `frontend`, `e2e`). El job E2E levanta
+el stack demo con Docker y corre Playwright. Responsive verificado en 5
+breakpoints; las capturas de este README son de escritorio.
 
-## Estado
+Detalle de tests, cobertura y política anti-flaky en [tests](docs/testing.md).
 
-- **Docker local:** el stack completo levanta con
-  `docker compose up -d --build` y responde en `http://localhost:8081`. Sin
-  deploy público.
-- **Imágenes:** la galería, la imagen principal y la subida están implementadas.
-  Los datos semilla cubren 10 de 30 referencias; las 20 restantes caen al
-  placeholder `/site/placeholder-instrument.jpg`. Se aceptan placeholders por
-  ahora.
-- **Carrito y favoritos:** implementados con persistencia local; el checkout
-  sigue sin procesar pagos.
-- **Admin:** el panel está abierto, sin autenticación.
+## Estado y límites
 
-## Origen
+- Demo de solo lectura: el backend responde 405 a escrituras; el panel se
+  recorre y guarda cambios en el navegador; la subida de imágenes está
+  deshabilitada.
+- Sin login ni autenticación: el panel es de demo, no un backoffice seguro.
+- Sin checkout ni pagos; carrito y favoritos son locales.
+- Pedidos: API disponible, sin flujo de compra en el frontend.
+- Imágenes de seed: stock libre, no productos reales; precios ficticios.
+- Deploy público: planificado; todavía no hay URL pública.
+- Búsqueda, filtro, orden y paginación se resuelven en el cliente.
 
-Desarrollado por Agustín Sandoval como trabajo práctico de Laboratorio de
-Computación 4 (UTN Facultad Regional Mendoza, 2025).
+El detalle completo está en [límites conocidos](docs/known-limitations.md).
 
-## Licencia
+## Documentación
 
-Código bajo [MIT](./LICENSE) · © 2026 Agustín Matías Sandoval.
+- [Arquitectura](docs/architecture.md)
+- [API](docs/api.md)
+- [Configuración](docs/configuration.md)
+- [Despliegue](docs/deployment.md)
+- [Resolución de problemas](docs/troubleshooting.md)
+- [Límites conocidos](docs/known-limitations.md)
+- [Tests](docs/testing.md)
+- [Sistema de diseño](docs/design-system.md)
 
-El contenido, la marca y los assets de terceros no están cubiertos por la
-licencia MIT. Ver [NOTICE.md](./NOTICE.md).
+## Autor y licencia
+
+Desarrollado por **Agustín Sandoval**. Código bajo [MIT](./LICENSE); marca y
+contenido en [NOTICE.md](./NOTICE.md).
+
+**Contáctame:** [agustin.matias.sandoval@gmail.com](mailto:agustin.matias.sandoval@gmail.com)
