@@ -21,8 +21,9 @@ import org.testcontainers.utility.MountableFile;
  * JPA contra ese esquema, así que los tests comprueban el contrato real y no
  * una aproximación con H2.</p>
  *
- * <p>El contenedor es estático y se comparte entre las clases de test que
- * extienden esta base (incluida la variante con perfil {@code demo}).</p>
+ * <p>Cada clase de test que extiende esta base levanta su propio contenedor
+ * {@code postgres:17} (uno por clase), de modo que los tests no comparten estado
+ * de base de datos entre sí.</p>
  */
 @SpringBootTest
 @AutoConfigureMockMvc
