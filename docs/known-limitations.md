@@ -32,6 +32,13 @@ promesa de producción.
 - **Imágenes de stock.** Las 30 imágenes de seed son fotografías de Pexels con
   licencia libre, no productos reales; los precios y marcas son ficticios. Ver
   [créditos](../backend/src/main/resources/static/images/CREDITS.md).
+- **Snapshot estático.** Si el backend no responde en 8 segundos, la demo muestra
+  un snapshot empaquetado con la SPA. No es la base en vivo y puede quedar
+  desactualizado hasta que el backend conecte y lo reemplace.
+- **Imágenes duplicadas.** Las 30 JPEG del seed viven tanto en
+  `backend/src/main/resources/static/images/` como en
+  `frontend/public/site/instruments/`, para que el snapshot funcione sin
+  backend. Hay que mantener ambas copias sincronizadas.
 - **Sin email.** No se envían correos de confirmación, recuperación ni contacto.
   El formulario de contacto de la demo es informativo.
 - **Sin i18n.** La interfaz está en español; no hay selector de idioma ni
@@ -71,10 +78,8 @@ promesa de producción.
   capturas del README son de escritorio; no hay set mobile.
 - **Sin regresión visual automatizada.** Los E2E son funcionales; no comparan
   imágenes.
-- **Sin cobertura mínima obligatoria.** Hay 120 tests, pero no un umbral de
+- **Sin cobertura mínima obligatoria.** Hay 129 tests, pero no un umbral de
   cobertura que bloquee el CI.
-- **`/design-preview` es temporal.** Es una maqueta de la fase de diseño, no una
-  ruta del producto; se retira en la limpieza final.
 
 ## Deploy
 

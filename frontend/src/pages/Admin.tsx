@@ -23,7 +23,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Skeleton } from "@/components/ui/skeleton"
 import {
   Table,
   TableBody,
@@ -34,6 +33,7 @@ import {
 } from "@/components/ui/table"
 import { InstrumentoForm } from "../components/InstrumentoForm"
 import { CategoriaAdmin } from "../components/CategoriaAdmin"
+import { DataLoading } from "../components/DataLoading"
 import { ErrorScreen } from "../components/ErrorScreen"
 import { useCatalogUpdated } from "../data/hooks"
 import type {
@@ -135,7 +135,18 @@ export const Admin = () => {
   }
 
   const loadInstrumentosImages = async (instrumentosArray: Instrumento[]) => {
-    const imagePromises = instrumentosArray.map(async (instrumento) => {
+    // Los instrumentos con `imagen` ya tienen una URL lista (seed o snapshot):
+    // no se consulta la imagen principal para evitar N+1 contra el backend.
+    const pendientes = instrumentosArray.filter(
+      (instrumento) => !instrumento.imagen,
+    )
+
+    if (pendientes.length === 0) {
+      setInstrumentoImages({})
+      return
+    }
+
+    const imagePromises = pendientes.map(async (instrumento) => {
       try {
         const response = await imageService.getPrimary(instrumento.id)
         if (response.success && response.data) {
@@ -348,18 +359,7 @@ export const Admin = () => {
   )
 
   if (loading) {
-    return (
-      <div className="mx-auto w-full max-w-6xl px-4 py-10">
-        <Skeleton className="h-6 w-32 rounded-full" />
-        <Skeleton className="mt-3 h-10 w-80 rounded-xl" />
-        <Skeleton className="mt-8 h-24 w-full rounded-2xl" />
-        <div className="mt-6 flex flex-col gap-3">
-          {Array.from({ length: 6 }).map((_, index) => (
-            <Skeleton key={index} className="h-16 w-full rounded-2xl" />
-          ))}
-        </div>
-      </div>
-    )
+    return <DataLoading />
   }
 
   if (error) {

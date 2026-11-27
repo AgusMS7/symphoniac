@@ -7,7 +7,7 @@ import { BrandMarquee } from "@/components/shop/brand-marquee"
 import { FeaturedCarousel } from "@/components/shop/featured-carousel"
 import { NumberTicker } from "@/components/shadcn-space/number-ticker/number-ticker"
 import { Button } from "@/components/ui/button"
-import { Skeleton } from "@/components/ui/skeleton"
+import { DataLoading } from "../components/DataLoading"
 import { InstrumentoCard } from "../components/InstrumentoCard"
 import { ErrorScreen } from "../components/ErrorScreen"
 import { useCatalogUpdated } from "../data/hooks"
@@ -77,21 +77,7 @@ export const Home = () => {
   }
 
   if (loading) {
-    return (
-      <div className="mx-auto w-full max-w-6xl px-4 py-10">
-        <Skeleton className="h-6 w-40 rounded-full" />
-        <Skeleton className="mt-4 h-24 w-3/4 max-w-xl rounded-xl" />
-        <Skeleton className="mt-8 h-[360px] w-full rounded-2xl" />
-        <div className="mt-10 grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2">
-          {Array.from({ length: 4 }).map((_, index) => (
-            <Skeleton
-              key={index}
-              className="aspect-[4/5] w-full rounded-2xl"
-            />
-          ))}
-        </div>
-      </div>
-    )
+    return <DataLoading />
   }
 
   if (error) {

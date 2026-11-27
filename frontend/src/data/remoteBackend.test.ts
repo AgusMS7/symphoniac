@@ -130,6 +130,17 @@ describe("imageService", () => {
     )
   })
 
+  it("getImageUrl devuelve intacta una ruta local o absoluta", () => {
+    expect(
+      remoteBackend.imageService.getImageUrl("/site/instruments/x.jpg"),
+    ).toBe("/site/instruments/x.jpg")
+    expect(
+      remoteBackend.imageService.getImageUrl(
+        "https://cdn.example.com/x.jpg",
+      ),
+    ).toBe("https://cdn.example.com/x.jpg")
+  })
+
   it("upload envía FormData con altText e isPrimary", async () => {
     fetchMock.mockResolvedValueOnce(jsonResponse({ success: true }))
     const file = new File(["contenido"], "foto.jpg", { type: "image/jpeg" });

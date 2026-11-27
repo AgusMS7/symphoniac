@@ -49,9 +49,7 @@ red interna de Compose.
 | `/admin` | `Admin` | CRUD de instrumentos y categorías |
 
 Las rutas se cargan con `lazy` y `Suspense`; el `AppShell` aporta navbar, footer,
-skip link, spotlight y transición de página. `/design-preview` se monta desde
-`main.tsx` por `window.location.pathname` y es una maqueta temporal, no una ruta
-del router.
+skip link, spotlight y transición de página.
 
 ### Data layer
 
@@ -60,9 +58,16 @@ del router.
 uno de dos backends según `VITE_DEMO`:
 
 - `remoteBackend`: `fetch` contra `VITE_API_URL` (default `/api`) y
-  `VITE_IMAGES_URL` (default `/images`).
-- `demoBackend`: lee el catálogo remoto, lo cachea y aplica un overlay de
-  escrituras en `localStorage`.
+  `VITE_IMAGES_URL` (default `/images`). `getImageUrl` deja intactas las rutas
+  locales (`/site/instruments/...`) y las URLs absolutas.
+- `demoBackend`: intenta leer el catálogo remoto y aplica un overlay de
+  escrituras en `localStorage`. Si el backend responde, cachea la base y sigue
+  refrescándola en segundo plano cada 15 segundos. Si no responde en 8 segundos
+  o falla por red, HTTP o JSON inválido, devuelve `data/demoSnapshot.json`
+  memoizado en memoria y reintenta cada 15 segundos. El snapshot nunca se
+  escribe en `localStorage`. Cuando el backend vuelve, `demoBackend` escribe el
+  cache, limpia el snapshot y emite `emitCatalogUpdated()` para que las páginas
+  se refresquen.
 
 Claves del overlay: `symphoniac:v1:overlay:instrumentos`,
 `symphoniac:v1:overlay:categorias`, `symphoniac:v1:meta`,
@@ -70,6 +75,12 @@ Claves del overlay: `symphoniac:v1:overlay:instrumentos`,
 `symphoniac:v1:cache:catalogo`. Los IDs locales son negativos para no colisionar
 con los del backend. El cache muestra el catálogo al instante y se refresca en
 segundo plano cada 15 segundos.
+
+El snapshot vive en `frontend/src/data/demoSnapshot.json` (30 instrumentos y 5
+categorías) y sus imágenes en `frontend/public/site/instruments/`, generadas a
+partir de `backend/db/seed.sql` y `backend/src/main/resources/static/images/`.
+La UI usa `DataLoading` mientras espera y registra en consola si cargó desde el
+backend o desde el snapshot.
 
 ### Estado local
 

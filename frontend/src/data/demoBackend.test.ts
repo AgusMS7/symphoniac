@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 import type { Categoria, Instrumento } from "../types/Instrumento"
+import { STORAGE_KEYS } from "./storage"
 
 const remote = vi.hoisted(() => ({
   getAllSimple: vi.fn(),
@@ -83,6 +84,8 @@ beforeEach(() => {
 })
 
 afterEach(async () => {
+  // Los tests de fallback usan timers falsos; se restauran antes de esperar.
+  vi.useRealTimers()
   // Deja correr el refresh en segundo plano antes de limpiar el storage.
   await new Promise((resolve) => setTimeout(resolve, 0))
   window.localStorage.clear()
@@ -283,5 +286,120 @@ describe("imageService en demo", () => {
     expect(demoBackend.imageService.getImageUrl("nro1.jpg")).toBe(
       "/images/nro1.jpg",
     )
+  })
+})
+
+describe("fallback al snapshot estático", () => {
+  it("usa el backend cuando responde y lo cachea", async () => {
+    const info = vi.spyOn(console, "info").mockImplementation(() => {})
+    const { demoBackend } = await loadDemo()
+
+    const result = await demoBackend.instrumentoService.getAllSimple()
+
+    expect(result.data).toHaveLength(2)
+    expect(window.localStorage.getItem(STORAGE_KEYS.cacheCatalogo)).not.toBeNull()
+    expect(info).toHaveBeenCalledWith(
+      "[symphoniac] Catálogo cargado desde el backend",
+      { instrumentos: 2, categorias: 2 },
+    )
+  })
+
+  it("cae al snapshot si el backend no responde en 8 segundos", async () => {
+    vi.useFakeTimers()
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {})
+    const error = vi.spyOn(console, "error").mockImplementation(() => {})
+
+    remote.getAllSimple.mockReturnValue(new Promise(() => {}))
+    remote.getCategorias.mockReturnValue(new Promise(() => {}))
+    const { demoBackend } = await loadDemo()
+
+    const request = demoBackend.instrumentoService.getAllSimple()
+    await vi.advanceTimersByTimeAsync(8_000)
+    const result = await request
+
+    expect(result.data).toHaveLength(30)
+    expect(window.localStorage.getItem(STORAGE_KEYS.cacheCatalogo)).toBeNull()
+    expect(warn).toHaveBeenCalledWith(
+      "[symphoniac] Backend no disponible; usando snapshot estático",
+      { instrumentos: 30, categorias: 5 },
+    )
+    expect(error).toHaveBeenCalled()
+  })
+
+  it("cae al snapshot inmediatamente ante un error de red", async () => {
+    vi.useFakeTimers()
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {})
+    const error = vi.spyOn(console, "error").mockImplementation(() => {})
+
+    remote.getAllSimple.mockRejectedValue(new Error("network down"))
+    remote.getCategorias.mockRejectedValue(new Error("network down"))
+    const { demoBackend } = await loadDemo()
+
+    const result = await demoBackend.instrumentoService.getAllSimple()
+
+    expect(result.data).toHaveLength(30)
+    expect(window.localStorage.getItem(STORAGE_KEYS.cacheCatalogo)).toBeNull()
+    expect(warn).toHaveBeenCalledWith(
+      "[symphoniac] Backend no disponible; usando snapshot estático",
+      { instrumentos: 30, categorias: 5 },
+    )
+    expect(error).toHaveBeenCalled()
+  })
+
+  it("reemplaza el snapshot cuando el backend conecta después", async () => {
+    vi.useFakeTimers()
+    const info = vi.spyOn(console, "info").mockImplementation(() => {})
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {})
+    const error = vi.spyOn(console, "error").mockImplementation(() => {})
+
+    let resolveInstrumentos:
+      | ((value: {
+          success: boolean
+          data: Instrumento[]
+          content: Instrumento[]
+        }) => void)
+      | undefined
+    const instrumentosPromise = new Promise<{
+      success: boolean
+      data: Instrumento[]
+      content: Instrumento[]
+    }>((resolve) => {
+      resolveInstrumentos = resolve
+    })
+
+    remote.getAllSimple.mockReturnValue(instrumentosPromise)
+    remote.getCategorias.mockResolvedValue({ success: true, data: categorias })
+
+    const { demoBackend } = await loadDemo()
+    const { subscribeCatalogUpdated } = await import("./events")
+    const listener = vi.fn()
+    const unsubscribe = subscribeCatalogUpdated(listener)
+
+    const request = demoBackend.instrumentoService.getAllSimple()
+    await vi.advanceTimersByTimeAsync(8_000)
+    const snapshotResult = await request
+
+    expect(snapshotResult.data).toHaveLength(30)
+    expect(window.localStorage.getItem(STORAGE_KEYS.cacheCatalogo)).toBeNull()
+
+    resolveInstrumentos?.({
+      success: true,
+      data: instrumentos,
+      content: instrumentos,
+    })
+    await vi.advanceTimersByTimeAsync(0)
+
+    expect(window.localStorage.getItem(STORAGE_KEYS.cacheCatalogo)).not.toBeNull()
+    expect(listener).toHaveBeenCalled()
+    expect(info).toHaveBeenCalledWith(
+      "[symphoniac] Backend conectado; catálogo actualizado desde el backend",
+    )
+
+    const backendResult = await demoBackend.instrumentoService.getAllSimple()
+    expect(backendResult.data).toHaveLength(2)
+
+    unsubscribe()
+    expect(warn).toHaveBeenCalled()
+    expect(error).toHaveBeenCalled()
   })
 })

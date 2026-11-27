@@ -39,6 +39,10 @@ export const InstrumentoCard = ({
   const esFavorito = favoritos.includes(instrumento.id)
 
   useEffect(() => {
+    // El snapshot y el seed ya traen `imagen`; no hace falta pedir la imagen
+    // principal al backend por cada tarjeta.
+    if (instrumento.imagen) return
+
     let active = true
     loadPrimaryImageSafely(instrumento.id, (image) => {
       if (active) setPrimaryImage(image)
@@ -46,7 +50,7 @@ export const InstrumentoCard = ({
     return () => {
       active = false
     }
-  }, [instrumento.id])
+  }, [instrumento.id, instrumento.imagen])
 
   useEffect(() => () => clearTimeout(addedTimer.current), [])
 
