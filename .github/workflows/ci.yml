@@ -93,8 +93,11 @@ jobs:
         working-directory: frontend
         run: npx playwright install --with-deps chromium
 
+      - name: Construir imágenes Docker
+        run: docker compose build
+
       - name: Levantar stack demo
-        run: docker compose up -d --build
+        run: docker compose up -d
 
       - name: Esperar frontend y API
         run: |
