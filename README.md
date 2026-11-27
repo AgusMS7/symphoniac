@@ -11,7 +11,7 @@ Se levanta completo con Docker Compose; la aplicación queda en
 
 | Capa | Tecnología |
 |---|---|
-| Frontend | React 19, TypeScript 5.9, Vite 7, React Router 6 |
+| Frontend | React 19, TypeScript 5.9, Vite 7, React Router 7 |
 | Backend | Java 17, Spring Boot 3.5.x, Spring Data JPA, Bean Validation |
 | Base de datos | PostgreSQL 17+ |
 | Orquestación | Docker Compose (DB + backend + frontend) |
