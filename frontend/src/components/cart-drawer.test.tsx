@@ -92,6 +92,16 @@ describe("CartDrawer", () => {
     expect(screen.getAllByText("$25.000").length).toBeGreaterThanOrEqual(2)
   })
 
+  it("suma el envío al total cuando no es gratis", async () => {
+    addToCart(16)
+    renderDrawer()
+
+    expect(await screen.findByText("Saxofón Alto")).toBeInTheDocument()
+    expect(screen.getByText("Envío")).toBeInTheDocument()
+    expect(screen.getByText("$500")).toBeInTheDocument()
+    expect(screen.getByText("$95.500")).toBeInTheDocument()
+  })
+
   it("incrementa, decrementa y quita líneas", async () => {
     const user = userEvent.setup()
     addToCart(11)
