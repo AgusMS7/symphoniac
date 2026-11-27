@@ -23,6 +23,11 @@ backend/public/images/*
 *.log
 npm-debug.log*
 
+# Artefactos de tests
+frontend/playwright-report/
+frontend/test-results/
+frontend/coverage/
+
 # Editores / sistema operativo
 .vscode/
 .idea/
