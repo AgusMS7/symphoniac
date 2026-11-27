@@ -42,7 +42,7 @@ test.describe("catálogo", () => {
       page.getByText("Mostrando 10 de 30 instrumentos"),
     ).toBeVisible()
 
-    await page.locator("#categoria-select").click()
+    await page.getByLabel("Filtrar por categoría").click()
     await page.getByRole("option", { name: "Viento" }).click()
 
     await expect(page.getByText("Mostrando 5 de 5 instrumentos")).toBeVisible()
