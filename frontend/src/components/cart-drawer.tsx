@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react"
-import { Minus, Plus, Trash2 } from "lucide-react"
+import { Minus, Package, Plus, ShoppingCart, Trash2 } from "lucide-react"
 import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
+import { Skeleton } from "@/components/ui/skeleton"
 import {
   Sheet,
   SheetContent,
@@ -50,7 +51,7 @@ function CartLineImage({ instrumento }: { instrumento: Instrumento }) {
   }, [instrumento.id])
 
   const src = imageError
-    ? "/icons/no-image.svg"
+    ? "/site/placeholder-instrument.jpg"
     : getImageUrl(primaryImage, instrumento.imagen)
   const alt = getImageAltText(primaryImage, instrumento.instrumento)
 
@@ -134,9 +135,14 @@ export function CartDrawer({ open, onOpenChange }: CartDrawerProps) {
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="w-full sm:max-w-md">
-        <SheetHeader>
-          <SheetTitle>Carrito y pedidos</SheetTitle>
+      <SheetContent
+        side="right"
+        className="w-full border-border/60 bg-background/95 backdrop-blur-xl sm:max-w-md"
+      >
+        <SheetHeader className="border-b border-border/60 pb-4">
+          <SheetTitle className="font-display text-xl font-semibold">
+            Carrito y pedidos
+          </SheetTitle>
           <SheetDescription>
             Los datos se guardan en este navegador.
           </SheetDescription>
@@ -150,10 +156,10 @@ export function CartDrawer({ open, onOpenChange }: CartDrawerProps) {
 
           <TabsContent
             value="carrito"
-            className="mt-4 flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto"
+            className="mt-4 flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto pr-1"
           >
             {faltantes.length > 0 && (
-              <div className="rounded-md border border-destructive/30 bg-destructive/5 p-3 text-sm">
+              <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-3 text-sm">
                 <p className="text-foreground">
                   {faltantes.length === 1
                     ? "Un producto del carrito ya no está disponible."
@@ -179,19 +185,53 @@ export function CartDrawer({ open, onOpenChange }: CartDrawerProps) {
             )}
 
             {error ? (
-              <p className="py-10 text-center text-sm text-destructive">
+              <p
+                role="alert"
+                className="py-10 text-center text-sm text-destructive"
+              >
                 {error}
               </p>
             ) : cargando ? (
-              <p className="py-10 text-center text-sm text-muted-foreground">
-                Cargando carrito...
-              </p>
+              <div
+                className="flex flex-col gap-3"
+                role="status"
+                aria-live="polite"
+                aria-busy="true"
+              >
+                <span className="sr-only">Cargando carrito</span>
+                {Array.from({ length: 2 }).map((_, index) => (
+                  <div
+                    key={index}
+                    className="flex gap-3 rounded-xl border border-border/60 bg-card/40 p-3"
+                  >
+                    <Skeleton className="size-16 shrink-0 rounded-xl" />
+                    <div className="flex flex-1 flex-col gap-2">
+                      <Skeleton className="h-4 w-3/4 rounded-full" />
+                      <Skeleton className="h-3 w-1/3 rounded-full" />
+                      <Skeleton className="h-9 w-28 rounded-full" />
+                    </div>
+                  </div>
+                ))}
+              </div>
             ) : lineas.length === 0 ? (
-              <p className="py-10 text-center text-sm text-muted-foreground">
-                {faltantes.length > 0
-                  ? "No hay productos disponibles en el carrito."
-                  : "Tu carrito está vacío."}
-              </p>
+              <div className="flex flex-col items-center gap-3 py-10 text-center">
+                <span className="grid size-12 place-items-center rounded-full border border-border/60 bg-muted/40">
+                  <ShoppingCart
+                    className="size-5 text-muted-foreground"
+                    aria-hidden="true"
+                  />
+                </span>
+                <div>
+                  <p className="font-display text-lg font-semibold text-foreground">
+                    Tu carrito está vacío
+                  </p>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    {faltantes.length > 0
+                      ? "No hay productos disponibles en el carrito."
+                      : "Agregá instrumentos desde el catálogo para verlos acá."}
+                  </p>
+                </div>
+              </div>
             ) : (
               <>
                 <div className="flex flex-col gap-3">
@@ -199,15 +239,18 @@ export function CartDrawer({ open, onOpenChange }: CartDrawerProps) {
                     const nombre = linea.instrumento.instrumento
 
                     return (
-                      <div key={linea.instrumentoId} className="flex gap-3">
-                        <div className="size-16 shrink-0 overflow-hidden rounded-md bg-muted">
+                      <div
+                        key={linea.instrumentoId}
+                        className="flex gap-3 rounded-xl border border-border/60 bg-card/40 p-3"
+                      >
+                        <div className="size-16 shrink-0 overflow-hidden rounded-xl bg-muted">
                           <CartLineImage instrumento={linea.instrumento} />
                         </div>
                         <div className="flex min-w-0 flex-1 flex-col gap-1">
-                          <p className="truncate text-sm font-medium text-foreground">
+                          <p className="truncate font-display text-base font-semibold text-foreground">
                             {nombre}
                           </p>
-                          <p className="text-xs text-muted-foreground">
+                          <p className="font-display text-sm font-semibold text-primary">
                             {formatearPrecio(linea.instrumento.precio)}
                           </p>
                           <div className="flex items-center gap-1">
@@ -257,7 +300,7 @@ export function CartDrawer({ open, onOpenChange }: CartDrawerProps) {
 
                 <Separator />
 
-                <dl className="flex flex-col gap-1.5 text-sm">
+                <dl className="flex flex-col gap-1.5 rounded-xl border border-border/60 bg-card/40 p-4 text-sm">
                   <div className="flex justify-between gap-4">
                     <dt className="text-muted-foreground">Subtotal</dt>
                     <dd className="font-medium text-foreground">
@@ -270,9 +313,11 @@ export function CartDrawer({ open, onOpenChange }: CartDrawerProps) {
                       {envio === 0 ? "Gratis" : formatearPrecio(envio)}
                     </dd>
                   </div>
-                  <div className="flex justify-between gap-4 text-base">
-                    <dt className="font-semibold text-foreground">Total</dt>
-                    <dd className="font-semibold text-foreground">
+                  <div className="flex justify-between gap-4 border-t border-border/60 pt-2 text-base">
+                    <dt className="font-display font-semibold text-foreground">
+                      Total
+                    </dt>
+                    <dd className="font-display font-semibold text-primary">
                       {formatearPrecio(total)}
                     </dd>
                   </div>
@@ -280,6 +325,7 @@ export function CartDrawer({ open, onOpenChange }: CartDrawerProps) {
 
                 <Button
                   type="button"
+                  size="lg"
                   className="w-full"
                   onClick={() =>
                     toast.info(
@@ -305,23 +351,36 @@ export function CartDrawer({ open, onOpenChange }: CartDrawerProps) {
             className="mt-4 flex min-h-0 flex-1 flex-col overflow-y-auto"
           >
             {orders.length === 0 ? (
-              <p className="py-10 text-center text-sm text-muted-foreground">
-                Sin pedidos
-              </p>
+              <div className="flex flex-col items-center gap-3 py-10 text-center">
+                <span className="grid size-12 place-items-center rounded-full border border-border/60 bg-muted/40">
+                  <Package
+                    className="size-5 text-muted-foreground"
+                    aria-hidden="true"
+                  />
+                </span>
+                <div>
+                  <p className="font-display text-lg font-semibold text-foreground">
+                    Sin pedidos
+                  </p>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Los pedidos de la demo se guardan en este navegador.
+                  </p>
+                </div>
+              </div>
             ) : (
               <ul className="flex flex-col gap-2">
                 {orders.map((order) => (
                   <li
                     key={order.id}
-                    className="rounded-md border border-border p-3"
+                    className="rounded-xl border border-border/60 bg-card/40 p-3"
                   >
-                    <p className="text-sm font-medium text-foreground">
+                    <p className="font-display text-sm font-semibold text-foreground">
                       Pedido #{order.id}
                     </p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="font-mono text-[9px] uppercase tracking-[0.14em] text-muted-foreground">
                       {new Date(order.fecha).toLocaleString("es-AR")}
                     </p>
-                    <p className="mt-1 text-sm font-semibold text-foreground">
+                    <p className="mt-1 font-display text-base font-semibold text-primary">
                       {formatearPrecio(order.total)}
                     </p>
                   </li>

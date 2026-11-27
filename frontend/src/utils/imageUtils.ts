@@ -7,7 +7,7 @@ import type { ProductImage } from "../types/Instrumento";
 export const getImageUrl = (
   primaryImage?: ProductImage | null,
   legacyImage?: string | null,
-  fallbackUrl: string = "/icons/no-image.svg",
+  fallbackUrl: string = "/site/placeholder-instrument.jpg",
 ): string => {
   // Prioridad 1: Imagen principal del nuevo sistema
   if (primaryImage && primaryImage.imageUrl) {
@@ -29,7 +29,7 @@ export const getImageUrl = (
 export const handleImageError = (
   event: React.SyntheticEvent<HTMLImageElement>,
   instrumentoId?: number,
-  fallbackUrl: string = "/icons/no-image.svg",
+  fallbackUrl: string = "/site/placeholder-instrument.jpg",
 ) => {
   const target = event.currentTarget;
 

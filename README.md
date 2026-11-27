@@ -117,13 +117,20 @@ todavía.
   deploy público.
 - **Imágenes:** la galería, la imagen principal y la subida están implementadas.
   Los datos semilla cubren 10 de 30 referencias; las 20 restantes caen al
-  placeholder `/icons/no-image.svg`. Se aceptan placeholders por ahora.
-- **Carrito y favoritos:** los botones existen en el detalle pero no están
-  conectados; el backend ya expone `/api/pedidos`.
+  placeholder `/site/placeholder-instrument.jpg`. Se aceptan placeholders por
+  ahora.
+- **Carrito y favoritos:** implementados con persistencia local; el checkout
+  sigue sin procesar pagos.
 - **Admin:** el panel está abierto, sin autenticación.
 
 ## Origen
 
 Desarrollado por Agustín Sandoval como trabajo práctico de Laboratorio de
-Computación 4 (UTN Facultad Regional Mendoza, 2025). La licencia no está
-declarada en el repositorio.
+Computación 4 (UTN Facultad Regional Mendoza, 2025).
+
+## Licencia
+
+Código bajo [MIT](./LICENSE) · © 2026 Agustín Matías Sandoval.
+
+El contenido, la marca y los assets de terceros no están cubiertos por la
+licencia MIT. Ver [NOTICE.md](./NOTICE.md).

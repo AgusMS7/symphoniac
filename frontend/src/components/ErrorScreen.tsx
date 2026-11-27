@@ -23,23 +23,23 @@ export const ErrorScreen = ({
 }: ErrorScreenProps) => {
   return (
     <div className="mx-auto w-full max-w-xl px-4 py-16">
-      <Card className="items-center text-center">
-        <CardContent className="flex flex-col items-center gap-4">
-          <span className="flex size-12 items-center justify-center rounded-full bg-destructive/10">
+      <Card className="rounded-2xl border-border/60 bg-card/60 text-center">
+        <CardContent className="flex flex-col items-center gap-4 py-10">
+          <span className="grid size-12 place-items-center rounded-full border border-destructive/30 bg-destructive/10">
             <TriangleAlert
               className="size-6 text-destructive"
               aria-hidden="true"
             />
           </span>
 
-          <h2 className="font-display text-xl font-semibold text-foreground">
+          <h2 className="font-display text-2xl font-semibold text-foreground">
             {title}
           </h2>
 
           <p className="max-w-md text-sm text-muted-foreground">{message}</p>
 
           {details && (
-            <p className="w-full rounded-md border border-border bg-muted/50 px-3 py-2 text-left text-xs text-muted-foreground">
+            <p className="w-full rounded-xl border border-border/60 bg-muted/30 px-3 py-2 text-left font-mono text-[10px] leading-relaxed text-muted-foreground">
               <strong className="text-foreground">Detalles técnicos:</strong>{" "}
               {details}
             </p>

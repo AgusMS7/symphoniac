@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Montserrat:wght@400;500;600;700;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700&family=IBM+Plex+Mono:wght@400;500;600&display=swap");
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
@@ -8,8 +8,9 @@
 /* Unico lugar para cambiar la tipografia de toda la UI. */
 @theme {
   --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --font-display: "Montserrat", "Inter", sans-serif;
+  --font-display: "Bricolage Grotesque", "Inter", sans-serif;
   --font-heading: var(--font-display);
+  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
 @theme inline {
@@ -58,25 +59,25 @@
 /* Paleta unica (no hay modo claro): la clase .dark activa los variants dark:. */
 :root {
   color-scheme: dark;
-  --background: #0f0f0f;
-  --foreground: #ffffff;
-  --card: #1e1e1e;
-  --card-foreground: #ffffff;
-  --popover: #1a1a1a;
-  --popover-foreground: #ffffff;
+  --background: #09090c;
+  --foreground: #f7f7fb;
+  --card: #121218;
+  --card-foreground: #f7f7fb;
+  --popover: #14141a;
+  --popover-foreground: #f7f7fb;
   --primary: #ff7f32;
   --primary-foreground: #0f0f0f;
   --secondary: #b87333;
   --secondary-foreground: #0f0f0f;
-  --muted: #1a1a1a;
-  --muted-foreground: #b0b0b0;
-  --accent: #1e1e1e;
-  --accent-foreground: #ffffff;
+  --muted: #1a1a22;
+  --muted-foreground: #a3a3b2;
+  --accent: #1a1a22;
+  --accent-foreground: #f7f7fb;
   --destructive: #ef4444;
   --success: #10b981;
   --warning: #f59e0b;
-  --border: #333333;
-  --input: #333333;
+  --border: #2a2a35;
+  --input: #2a2a35;
   --ring: #ff7f32;
   --chart-1: #ff7f32;
   --chart-2: #b87333;
@@ -84,13 +85,13 @@
   --chart-4: #f59e0b;
   --chart-5: #ef4444;
   --radius: 0.75rem;
-  --sidebar: #1a1a1a;
-  --sidebar-foreground: #ffffff;
+  --sidebar: #121218;
+  --sidebar-foreground: #f7f7fb;
   --sidebar-primary: #ff7f32;
   --sidebar-primary-foreground: #0f0f0f;
-  --sidebar-accent: #1e1e1e;
-  --sidebar-accent-foreground: #ffffff;
-  --sidebar-border: #333333;
+  --sidebar-accent: #1a1a22;
+  --sidebar-accent-foreground: #f7f7fb;
+  --sidebar-border: #2a2a35;
   --sidebar-ring: #ff7f32;
 }
 
@@ -113,7 +114,61 @@ body {
 }
 
 code {
-  font-family: "JetBrains Mono", source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
+  font-family: var(--font-mono);
+}
+
+::selection {
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+
+.grain-overlay {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E");
+  mix-blend-mode: overlay;
+}
+
+.hero-stage {
+  --spot-x: 50%;
+  --spot-y: 0%;
+}
+
+.hero-spotlight {
+  left: var(--spot-x);
+  top: var(--spot-y);
+  background: radial-gradient(
+    circle,
+    rgba(255, 127, 50, 0.12) 0%,
+    rgba(255, 127, 50, 0.07) 25%,
+    rgba(255, 127, 50, 0.03) 50%,
+    transparent 80%
+  );
+  filter: blur(24px);
+  transition:
+    left 120ms linear,
+    top 120ms linear;
+  will-change: left, top;
+}
+
+.ambient-stage {
+  --spot-x: 50%;
+  --spot-y: 0%;
+}
+
+.ambient-spotlight {
+  background: radial-gradient(
+    900px circle at var(--spot-x) var(--spot-y),
+    rgba(255, 127, 50, 0.1) 0%,
+    rgba(255, 127, 50, 0.06) 30%,
+    rgba(255, 127, 50, 0.02) 55%,
+    transparent 78%
+  );
+  filter: blur(24px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-spotlight {
+    transition: none;
+  }
 }
 
 @layer base {
@@ -125,5 +180,22 @@ code {
   }
   html {
     @apply font-sans;
+  }
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]) {
+    cursor: pointer;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }

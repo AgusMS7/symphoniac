@@ -321,8 +321,11 @@ export const InstrumentoForm = ({
 
   return (
     <section className="mx-auto w-full max-w-4xl px-4 py-10">
-      <h1 className="font-display text-2xl font-bold tracking-tight text-foreground">
-        {instrumento ? "Editar Instrumento" : "Crear Nuevo Instrumento"}
+      <p className="font-mono text-[10px] uppercase tracking-[0.24em] text-primary">
+        Administración
+      </p>
+      <h1 className="mt-2 font-display text-3xl font-semibold tracking-tight text-foreground">
+        {instrumento ? "Editar instrumento" : "Crear instrumento"}
       </h1>
 
       <form onSubmit={handleSubmit} className="mt-6 grid gap-6">
@@ -483,8 +486,8 @@ export const InstrumentoForm = ({
 
           <div className="flex flex-col gap-2 sm:col-span-2">
             <span className="text-sm font-medium">Imagen del Producto</span>
-            <div className="flex flex-col gap-4 rounded-xl border border-border p-4 sm:flex-row">
-              <div className="flex aspect-video w-full max-w-52 items-center justify-center overflow-hidden rounded-lg bg-muted sm:aspect-square">
+            <div className="flex flex-col gap-4 rounded-2xl border border-border/60 bg-card/40 p-4 sm:flex-row">
+              <div className="flex aspect-video w-full max-w-52 items-center justify-center overflow-hidden rounded-xl bg-muted sm:aspect-square">
                 {imagePreview ? (
                   <img
                     src={imagePreview}

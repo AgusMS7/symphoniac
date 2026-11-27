@@ -15,7 +15,6 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import {
@@ -194,12 +193,14 @@ export const CategoriaAdmin = ({
   if (showForm) {
     return (
       <section className="mx-auto w-full max-w-2xl px-4 py-10">
-        <h1 className="font-display text-2xl font-bold tracking-tight text-foreground">
-          {editingCategoria ? "Editar Categoría" : "Crear Nueva Categoría"}
+        <p className="font-mono text-[10px] uppercase tracking-[0.24em] text-primary">
+          Administración
+        </p>
+        <h1 className="mt-2 font-display text-3xl font-semibold tracking-tight text-foreground">
+          {editingCategoria ? "Editar categoría" : "Crear categoría"}
         </h1>
 
-        <Card className="mt-6">
-          <CardContent>
+        <div className="mt-6 border-y border-border/60 py-4">
             <form onSubmit={handleSubmit} className="grid gap-4">
               <div className="flex flex-col gap-1.5">
                 <Label htmlFor="denominacion">
@@ -239,18 +240,22 @@ export const CategoriaAdmin = ({
                 </Button>
               </div>
             </form>
-          </CardContent>
-        </Card>
+        </div>
       </section>
     )
   }
 
   return (
     <section className="mx-auto w-full max-w-5xl px-4 py-10">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="font-display text-2xl font-bold tracking-tight text-foreground">
-          Administración de Categorías
-        </h1>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p className="font-mono text-[10px] uppercase tracking-[0.24em] text-primary">
+            Administración
+          </p>
+          <h1 className="mt-2 font-display text-3xl font-semibold tracking-tight text-foreground">
+            Categorías
+          </h1>
+        </div>
         <div className="flex flex-wrap gap-2">
           <Button variant="outline" onClick={onBack}>
             <ArrowLeft aria-hidden="true" />
@@ -263,13 +268,11 @@ export const CategoriaAdmin = ({
         </div>
       </div>
 
-      <p className="mt-4 text-sm text-muted-foreground">
+      <p className="mt-4 font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
         Total de categorías: {categorias.length}
       </p>
 
-      <div className="mt-4 hidden md:block">
-        <Card>
-          <CardContent>
+      <div className="mt-4 hidden border-y border-border/60 md:block">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -295,25 +298,24 @@ export const CategoriaAdmin = ({
                 No hay categorías registradas.
               </p>
             )}
-          </CardContent>
-        </Card>
       </div>
 
-      <div className="mt-4 grid gap-3 md:hidden">
+      <div className="mt-4 divide-y divide-border/60 border-y border-border/60 md:hidden">
         {categorias.map((categoria) => (
-          <Card key={categoria.id} size="sm">
-            <CardContent className="flex items-center justify-between gap-3">
-              <div>
-                <p className="font-medium text-foreground">
-                  {categoria.denominacion}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  ID {categoria.id}
-                </p>
-              </div>
-              {renderActions(categoria)}
-            </CardContent>
-          </Card>
+          <div
+            key={categoria.id}
+            className="flex items-center justify-between gap-3 py-3"
+          >
+            <div>
+              <p className="font-display text-base font-semibold text-foreground">
+                {categoria.denominacion}
+              </p>
+              <p className="font-mono text-[9px] uppercase tracking-[0.14em] text-muted-foreground">
+                ID {categoria.id}
+              </p>
+            </div>
+            {renderActions(categoria)}
+          </div>
         ))}
         {categorias.length === 0 && (
           <p className="py-6 text-center text-sm text-muted-foreground">

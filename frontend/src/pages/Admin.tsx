@@ -14,7 +14,6 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import {
@@ -243,7 +242,7 @@ export const Admin = () => {
     const instrumentoIdStr = instrumento.id.toString()
 
     if (imageErrors[instrumentoIdStr]) {
-      return "/icons/no-image.svg"
+      return "/site/placeholder-instrument.jpg"
     }
 
     // Prioridad 1: Imagen principal del nuevo sistema
@@ -257,7 +256,7 @@ export const Admin = () => {
       return imageService.getImageUrl(instrumento.imagen)
     }
 
-    return "/icons/no-image.svg"
+    return "/site/placeholder-instrument.jpg"
   }
 
   const formatearPrecio = (precio: number) => {
@@ -351,11 +350,12 @@ export const Admin = () => {
   if (loading) {
     return (
       <div className="mx-auto w-full max-w-6xl px-4 py-10">
-        <Skeleton className="h-9 w-80" />
-        <Skeleton className="mt-6 h-20 w-full rounded-xl" />
+        <Skeleton className="h-6 w-32 rounded-full" />
+        <Skeleton className="mt-3 h-10 w-80 rounded-xl" />
+        <Skeleton className="mt-8 h-24 w-full rounded-2xl" />
         <div className="mt-6 flex flex-col gap-3">
           {Array.from({ length: 6 }).map((_, index) => (
-            <Skeleton key={index} className="h-16 w-full rounded-xl" />
+            <Skeleton key={index} className="h-16 w-full rounded-2xl" />
           ))}
         </div>
       </div>
@@ -397,10 +397,15 @@ export const Admin = () => {
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-10">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="font-display text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
-          Administración de Instrumentos
-        </h1>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p className="font-mono text-[10px] uppercase tracking-[0.24em] text-primary">
+            Administración
+          </p>
+          <h1 className="mt-2 font-display text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
+            Instrumentos
+          </h1>
+        </div>
         <div className="flex flex-wrap gap-2">
           <Button variant="outline" onClick={() => setShowCategorias(true)}>
             Administrar categorías
@@ -412,14 +417,18 @@ export const Admin = () => {
         </div>
       </div>
 
-      <Card className="mt-6">
-        <CardContent>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="busqueda">Buscar</Label>
+      <div className="mt-6 border-y border-border/60 py-4">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="flex flex-col gap-1.5">
+              <Label
+                htmlFor="busqueda"
+                className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground"
+              >
+                Buscar
+              </Label>
               <div className="relative">
                 <Search
-                  className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+                  className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
                   aria-hidden="true"
                 />
                 <Input
@@ -428,13 +437,18 @@ export const Admin = () => {
                   placeholder="Nombre, marca o modelo..."
                   value={busqueda}
                   onChange={(e) => setBusqueda(e.target.value)}
-                  className="pl-8"
+                  className="pl-10"
                 />
               </div>
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="categoria">Filtrar por categoría</Label>
+              <Label
+                htmlFor="categoria"
+                className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground"
+              >
+                Filtrar por categoría
+              </Label>
               <Select
                 value={filtroCategoria || ALL}
                 onValueChange={(value) =>
@@ -456,7 +470,12 @@ export const Admin = () => {
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="ordenamiento">Ordenar por</Label>
+              <Label
+                htmlFor="ordenamiento"
+                className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground"
+              >
+                Ordenar por
+              </Label>
               <Select value={ordenamiento} onValueChange={setOrdenamiento}>
                 <SelectTrigger id="ordenamiento" className="w-full">
                   <SelectValue placeholder="Ordenar por" />
@@ -471,19 +490,16 @@ export const Admin = () => {
               </Select>
             </div>
           </div>
-        </CardContent>
-      </Card>
+      </div>
 
-      <p className="mt-6 text-sm text-muted-foreground">
+      <p className="mt-6 font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
         Mostrando {instrumentosFiltrados.length} de {instrumentos.length}{" "}
         instrumentos
       </p>
 
       {/* Tabla en desktop */}
-      <div className="mt-4 hidden md:block">
-        <Card>
-          <CardContent>
-            <Table>
+      <div className="mt-4 hidden border-y border-border/60 md:block">
+        <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Imagen</TableHead>
@@ -503,7 +519,7 @@ export const Admin = () => {
                       <img
                         src={getInstrumentoImage(instrumento)}
                         alt={instrumento.instrumento}
-                        className="size-12 rounded-md object-cover"
+                        className="size-12 rounded-lg object-cover"
                         onError={() =>
                           handleImageError(instrumento.id.toString())
                         }
@@ -530,41 +546,37 @@ export const Admin = () => {
                 aplicados.
               </p>
             )}
-          </CardContent>
-        </Card>
       </div>
 
-      {/* Cards en móvil */}
-      <div className="mt-4 grid gap-3 md:hidden">
+      {/* Filas en móvil */}
+      <div className="mt-4 divide-y divide-border/60 border-y border-border/60 md:hidden">
         {instrumentosFiltrados.map((instrumento) => (
-          <Card key={instrumento.id} size="sm">
-            <CardContent className="flex gap-3">
-              <img
-                src={getInstrumentoImage(instrumento)}
-                alt={instrumento.instrumento}
-                className="size-16 shrink-0 rounded-md object-cover"
-                onError={() => handleImageError(instrumento.id.toString())}
-              />
-              <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-                <p className="truncate font-medium text-foreground">
-                  {instrumento.instrumento}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {instrumento.marca} - {instrumento.modelo}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {getCategoriaName(instrumento.idCategoria || 0)}
-                </p>
-                <p className="text-sm font-semibold text-primary">
-                  {formatearPrecio(instrumento.precio)}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {instrumento.cantidadVendida} vendidos
-                </p>
-              </div>
-              {renderActions(instrumento)}
-            </CardContent>
-          </Card>
+          <div key={instrumento.id} className="flex gap-3 py-3">
+            <img
+              src={getInstrumentoImage(instrumento)}
+              alt={instrumento.instrumento}
+              className="size-16 shrink-0 rounded-lg object-cover"
+              onError={() => handleImageError(instrumento.id.toString())}
+            />
+            <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+              <p className="truncate font-display text-base font-semibold text-foreground">
+                {instrumento.instrumento}
+              </p>
+              <p className="font-mono text-[9px] uppercase tracking-[0.14em] text-muted-foreground">
+                {instrumento.marca} · {instrumento.modelo}
+              </p>
+              <p className="font-mono text-[9px] uppercase tracking-[0.14em] text-muted-foreground">
+                {getCategoriaName(instrumento.idCategoria || 0)}
+              </p>
+              <p className="font-display text-base font-semibold text-primary">
+                {formatearPrecio(instrumento.precio)}
+              </p>
+              <p className="font-mono text-[9px] uppercase tracking-[0.14em] text-muted-foreground">
+                {instrumento.cantidadVendida} vendidos
+              </p>
+            </div>
+            {renderActions(instrumento)}
+          </div>
         ))}
         {instrumentosFiltrados.length === 0 && (
           <p className="py-6 text-center text-sm text-muted-foreground">
