@@ -11,7 +11,7 @@ Se levanta completo con Docker Compose; la aplicación queda en
 
 | Capa | Tecnología |
 |---|---|
-| Frontend | React 19, TypeScript 5.9, Vite 7, React Router 6 |
+| Frontend | React 19, TypeScript 5.9, Vite 7, React Router 7 |
 | Backend | Java 17, Spring Boot 3.5.x, Spring Data JPA, Bean Validation |
 | Base de datos | PostgreSQL 17+ |
 | Orquestación | Docker Compose (DB + backend + frontend) |
@@ -103,12 +103,14 @@ Implementados en `backend/src/main/java/com/symphoniac/controller/`.
 ## Calidad
 
 ```bash
-cd frontend && npm ci && npm run build && npm run lint   # frontend
-cd backend && ./mvnw -DskipTests package                 # backend (Windows: .\mvnw.cmd)
+cd frontend && npm ci && npm run lint && npm run test && npm run build   # frontend
+cd backend && ./mvnw verify                                              # backend (Windows: .\mvnw.cmd)
 ```
 
-Tests automáticos: un `contextLoads` en el backend; sin tests de frontend ni CI
-todavía.
+El backend corre tests unitarios y de integración con PostgreSQL efímero
+(Testcontainers, requiere Docker); el frontend usa Vitest + Testing Library y
+Playwright cubre los flujos E2E contra el stack demo. El detalle de la suite, los
+comandos y la CI está en `docs/testing.md`.
 
 ## Estado
 

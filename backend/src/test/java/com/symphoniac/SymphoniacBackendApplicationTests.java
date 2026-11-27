@@ -1,10 +1,8 @@
 package com.symphoniac;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
 
-@SpringBootTest
-class SymphoniacBackendApplicationTests {
+class SymphoniacBackendApplicationTests extends AbstractPostgresIntegrationTest {
 
 	@Test
 	void contextLoads() {

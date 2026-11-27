@@ -55,7 +55,7 @@ export const loadPrimaryImageSafely = async (
     } else {
       // No hay imagen principal configurada, esto es normal
     }
-  } catch (error) {
+  } catch {
     // Error de conexión o servidor, registrar silenciosamente
   } finally {
     onComplete?.();
