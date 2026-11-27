@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { Link, useLocation } from "react-router-dom"
-import { CircleHelp, Heart, Menu, ShoppingCart } from "lucide-react"
+import { CircleHelp, Heart, Menu, ShoppingCart, ArrowUpRight } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
@@ -14,6 +14,7 @@ import {
   Sheet,
   SheetClose,
   SheetContent,
+  SheetDescription,
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet"
@@ -50,50 +51,44 @@ function DemoChip() {
   }
 
   return (
-    <Popover>
-      <PopoverTrigger asChild>
-        <button
-          type="button"
-          aria-label="Información sobre la demo"
-          className={cn(
-            "inline-flex items-center gap-1 rounded-full border border-border bg-muted/60 p-0.5 pl-1.5 transition-colors hover:bg-muted",
-            focusRing,
-          )}
-        >
-          <Badge
-            variant="secondary"
-            className="rounded-full px-1.5 py-0 text-[10px] font-semibold"
+    <div className="flex items-center gap-1.5">
+      <span className="font-mono text-[9px] uppercase tracking-[0.18em] text-muted-foreground">
+        Demo
+      </span>
+      <Popover>
+        <PopoverTrigger asChild>
+          <button
+            type="button"
+            aria-label="Información sobre la demo"
+            className={cn(
+              "grid size-8 cursor-pointer place-items-center rounded-full border border-border/60 bg-muted/40 text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground",
+              focusRing,
+            )}
           >
-            Demo
-          </Badge>
-          <span className="flex size-5 items-center justify-center rounded-full">
-            <CircleHelp
-              className="size-3.5 text-muted-foreground"
-              aria-hidden="true"
-            />
-          </span>
-        </button>
-      </PopoverTrigger>
-      <PopoverContent align="end" className="w-72">
-        <p className="font-display text-sm font-semibold text-foreground">
-          Modo demo
-        </p>
-        <p className="mt-1 text-sm text-muted-foreground">
-          El catálogo viene del backend. Tus cambios (instrumentos, categorías,
-          favoritos y carrito) se guardan en este navegador. La compra no está
-          disponible en la demo.
-        </p>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          className="mt-3 w-full"
-          onClick={borrarDatos}
-        >
-          Borrar datos demo
-        </Button>
-      </PopoverContent>
-    </Popover>
+            <CircleHelp className="size-4" aria-hidden="true" />
+          </button>
+        </PopoverTrigger>
+        <PopoverContent align="end" className="w-72">
+          <p className="font-display text-sm font-semibold text-foreground">
+            Modo demo
+          </p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            El catálogo viene del backend. Tus cambios (instrumentos, categorías,
+            favoritos y carrito) se guardan en este navegador. La compra no está
+            disponible en la demo.
+          </p>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="mt-3 w-full"
+            onClick={borrarDatos}
+          >
+            Borrar datos demo
+          </Button>
+        </PopoverContent>
+      </Popover>
+    </div>
   )
 }
 
@@ -154,24 +149,35 @@ export function Navbar() {
   const { pathname } = useLocation()
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+    <header className="sticky top-0 z-50 w-full border-b border-border/60 bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-3 px-4">
-        <Link
-          to="/"
-          aria-label="Symphoniac, ir al inicio"
-          className={cn(
-            "flex items-center gap-2 font-display text-lg font-bold tracking-tight text-primary",
-            focusRing,
-          )}
-        >
-          <img
-            src="/icons/logo.svg"
-            alt=""
-            aria-hidden="true"
-            className="size-6"
-          />
-          <span>Symphoniac</span>
-        </Link>
+        <div className="flex min-w-0 items-center gap-2">
+          <Link
+            to="/"
+            aria-label="Symphoniac, ir al inicio"
+            className={cn(
+              "group flex cursor-pointer items-center gap-2.5 font-display text-xl font-semibold tracking-tight text-foreground",
+              focusRing,
+            )}
+          >
+            <img
+              src="/icons/logo.svg"
+              alt=""
+              aria-hidden="true"
+              className="size-10 shrink-0 transition-transform duration-300 group-hover:scale-[1.04] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
+            />
+            <span>Symphoniac</span>
+          </Link>
+          {IS_DEMO ? (
+            <>
+              <span
+                aria-hidden="true"
+                className="hidden h-5 w-px bg-border/60 sm:block"
+              />
+              <DemoChip />
+            </>
+          ) : null}
+        </div>
 
         <nav
           aria-label="Navegación principal"
@@ -185,22 +191,35 @@ export function Navbar() {
                 to={link.href}
                 aria-current={active ? "page" : undefined}
                 className={cn(
-                  "rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-muted hover:text-foreground",
-                  active ? "bg-muted text-foreground" : "text-muted-foreground",
+                  "relative cursor-pointer rounded-full px-3 py-2 text-sm font-medium transition-colors",
+                  active
+                    ? "text-foreground"
+                    : "text-muted-foreground hover:bg-muted/40 hover:text-foreground",
                   focusRing,
                 )}
               >
                 {link.label}
+                {active ? (
+                  <span
+                    aria-hidden="true"
+                    className="absolute inset-x-3 -bottom-0.5 h-px bg-primary"
+                  />
+                ) : null}
               </Link>
             )
           })}
         </nav>
 
         <div className="flex items-center gap-1.5">
-          {IS_DEMO && <DemoChip />}
           <div className="hidden sm:block">
             <ActionIcons onCartClick={() => setCartOpen(true)} />
           </div>
+          <Button asChild size="sm" className="hidden lg:inline-flex">
+            <Link to="/productos">
+              Ver catálogo
+              <ArrowUpRight className="size-4" aria-hidden="true" />
+            </Link>
+          </Button>
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
               <Button
@@ -212,8 +231,11 @@ export function Navbar() {
                 <Menu className="size-5" aria-hidden="true" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-72">
-              <SheetTitle className="font-display text-lg">Menú</SheetTitle>
+            <SheetContent side="right" className="w-80 border-border/60 bg-background/95 backdrop-blur-xl">
+              <SheetTitle className="font-display text-xl">Menú</SheetTitle>
+              <SheetDescription className="sr-only">
+                Navegación principal de Symphoniac
+              </SheetDescription>
               <nav
                 aria-label="Navegación móvil"
                 className="mt-6 flex flex-col gap-1"
@@ -226,20 +248,32 @@ export function Navbar() {
                         to={link.href}
                         aria-current={active ? "page" : undefined}
                         className={cn(
-                          "rounded-md px-3 py-2 text-sm font-medium hover:bg-muted hover:text-foreground",
+                          "flex cursor-pointer items-center justify-between rounded-full px-4 py-2.5 text-base font-medium transition-colors",
                           active
-                            ? "bg-muted text-foreground"
-                            : "text-muted-foreground",
+                            ? "bg-muted/60 text-foreground"
+                            : "text-muted-foreground hover:bg-muted/40 hover:text-foreground",
                           focusRing,
                         )}
                       >
                         {link.label}
+                        {active ? (
+                          <span
+                            aria-hidden="true"
+                            className="size-1.5 rounded-full bg-primary"
+                          />
+                        ) : null}
                       </Link>
                     </SheetClose>
                   )
                 })}
               </nav>
-              <div className="mt-6 border-t border-border pt-4 sm:hidden">
+              <Button asChild className="mt-6 w-full">
+                <Link to="/productos" onClick={() => setOpen(false)}>
+                  Ver catálogo
+                  <ArrowUpRight className="size-4" aria-hidden="true" />
+                </Link>
+              </Button>
+              <div className="mt-6 border-t border-border/60 pt-4 sm:hidden">
                 <ActionIcons
                   onCartClick={() => {
                     setOpen(false)

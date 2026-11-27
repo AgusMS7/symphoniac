@@ -1,0 +1,214 @@
+/*
+ * Estilos exclusivos de /design-preview (Fase 6).
+ * Archivo temporal: no forma parte del design system definitivo.
+ */
+
+.dir-a,
+.dir-b,
+.dir-c {
+  --dir-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --dir-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--dir-text);
+  background: var(--dir-bg);
+  font-family: var(--dir-sans);
+}
+
+.dir-a {
+  --dir-bg: #14110e;
+  --dir-surface: #1c1712;
+  --dir-surface-2: #241d16;
+  --dir-text: #f5ede3;
+  --dir-muted: #b9a894;
+  --dir-line: #3a2e23;
+  --dir-accent: #ff7f32;
+  --dir-accent-2: #b87333;
+  --dir-display: "Fraunces", Georgia, "Times New Roman", serif;
+}
+
+.dir-b {
+  --dir-bg: #09090c;
+  --dir-surface: #121218;
+  --dir-surface-2: #1a1a22;
+  --dir-text: #f7f7fb;
+  --dir-muted: #a3a3b2;
+  --dir-line: #2a2a35;
+  --dir-accent: #ff7f32;
+  --dir-accent-2: #b87333;
+  --dir-display: "Bricolage Grotesque", "Inter", sans-serif;
+}
+
+.dir-c {
+  --dir-bg: #0d0f10;
+  --dir-surface: #15181a;
+  --dir-surface-2: #1b1f21;
+  --dir-text: #f2f4f5;
+  --dir-muted: #9aa3a8;
+  --dir-line: #2c3235;
+  --dir-accent: #ff7f32;
+  --dir-accent-2: #10b981;
+  --dir-display: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.dp-display {
+  font-family: var(--dir-display);
+  font-weight: 600;
+}
+
+.dp-mono {
+  font-family: var(--dir-mono);
+  font-weight: 500;
+}
+
+.dp-muted {
+  color: var(--dir-muted);
+}
+
+.dp-accent {
+  color: var(--dir-accent);
+}
+
+.dp-accent-2 {
+  color: var(--dir-accent-2);
+}
+
+.dp-line {
+  border-color: var(--dir-line);
+}
+
+.dp-surface {
+  background: var(--dir-surface);
+}
+
+.dp-surface-2 {
+  background: var(--dir-surface-2);
+}
+
+.dp-frame {
+  position: relative;
+  isolation: isolate;
+  background: var(--dir-bg);
+  border: 1px solid var(--dir-line);
+  box-shadow: 0 30px 80px -40px rgba(0, 0, 0, 0.9);
+}
+
+.dp-frame > * {
+  position: relative;
+  z-index: 1;
+}
+
+.dp-noise,
+.dp-grid,
+.dp-paper {
+  position: relative;
+  isolation: isolate;
+}
+
+.dp-noise::before,
+.dp-grid::before,
+.dp-paper::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.dp-noise::before {
+  opacity: 0.05;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E");
+}
+
+.dp-grid::before {
+  opacity: 0.35;
+  background-image:
+    linear-gradient(to right, var(--dir-line) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--dir-line) 1px, transparent 1px);
+  background-size: 44px 44px;
+  -webkit-mask-image: linear-gradient(to bottom, black 0%, transparent 78%);
+  mask-image: linear-gradient(to bottom, black 0%, transparent 78%);
+}
+
+.dp-paper::before {
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      rgba(255, 255, 255, 0.02) 0 1px,
+      transparent 1px 4px
+    ),
+    radial-gradient(ellipse at 15% 0%, rgba(255, 127, 50, 0.08), transparent 45%);
+}
+
+.dp-corner::before,
+.dp-corner::after {
+  content: "+";
+  position: absolute;
+  z-index: 2;
+  color: var(--dir-accent-2);
+  font-family: var(--dir-mono);
+  font-size: 12px;
+  line-height: 1;
+  opacity: 0.85;
+}
+
+.dp-corner::before {
+  left: 8px;
+  top: 8px;
+}
+
+.dp-corner::after {
+  right: 8px;
+  bottom: 8px;
+}
+
+.dp-scanline {
+  background-image: repeating-linear-gradient(
+    0deg,
+    rgba(255, 255, 255, 0.035) 0 1px,
+    transparent 1px 3px
+  );
+}
+
+.dp-card-hover {
+  transition:
+    transform 220ms ease,
+    border-color 220ms ease,
+    background-color 220ms ease;
+}
+
+.dp-card-hover:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--dir-accent) 55%, var(--dir-line));
+}
+
+.dp-reveal {
+  animation: dp-reveal 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes dp-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dp-card-hover,
+  .dp-reveal {
+    animation: none;
+    transition: none;
+  }
+
+  .dp-card-hover:hover {
+    transform: none;
+  }
+
+  .dp-card-hover img {
+    transform: none !important;
+    transition: none;
+  }
+}

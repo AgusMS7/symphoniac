@@ -1,18 +1,13 @@
 import { useEffect, useState } from "react"
 import { useSearchParams } from "react-router-dom"
-import { ChevronLeft, ChevronRight, Search } from "lucide-react"
+import { Search } from "lucide-react"
+import { useReducedMotion } from "motion/react"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-} from "@/components/ui/pagination"
 import {
   Select,
   SelectContent,
@@ -21,6 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Skeleton } from "@/components/ui/skeleton"
+import { CatalogPagination } from "@/components/shop/catalog-pagination"
 import { InstrumentoCard } from "../components/InstrumentoCard"
 import { FiltroCategoria } from "../components/FiltroCategoria"
 import { ErrorScreen } from "../components/ErrorScreen"
@@ -51,6 +47,7 @@ export const Productos = () => {
   const [isRetrying, setIsRetrying] = useState(false)
   const [searchParams, setSearchParams] = useSearchParams()
   const favoritos = useFavorites()
+  const reduceMotion = useReducedMotion()
   const soloFavoritos = searchParams.get("favoritos") === "1"
 
   // Paginación
@@ -224,33 +221,21 @@ export const Productos = () => {
 
   const cambiarPagina = (nuevaPagina: number) => {
     setPaginaActual(nuevaPagina)
-    window.scrollTo({ top: 0, behavior: "smooth" })
-  }
-
-  const generarNumerosPagina = () => {
-    const numeros = []
-    const maxVisible = 5
-    let inicio = Math.max(1, paginaActual - Math.floor(maxVisible / 2))
-    const fin = Math.min(totalPaginas, inicio + maxVisible - 1)
-
-    if (fin - inicio < maxVisible - 1) {
-      inicio = Math.max(1, fin - maxVisible + 1)
-    }
-
-    for (let i = inicio; i <= fin; i++) {
-      numeros.push(i)
-    }
-    return numeros
+    window.scrollTo({ top: 0, behavior: reduceMotion ? "auto" : "smooth" })
   }
 
   if (loading) {
     return (
       <div className="mx-auto w-full max-w-6xl px-4 py-10">
-        <Skeleton className="h-9 w-64" />
-        <Skeleton className="mt-6 h-20 w-full rounded-xl" />
+        <Skeleton className="h-6 w-32 rounded-full" />
+        <Skeleton className="mt-4 h-12 w-64 rounded-xl" />
+        <Skeleton className="mt-8 h-24 w-full rounded-2xl" />
         <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {Array.from({ length: 8 }).map((_, index) => (
-            <Skeleton key={index} className="h-72 w-full rounded-xl" />
+            <Skeleton
+              key={index}
+              className="aspect-[4/5] w-full rounded-2xl"
+            />
           ))}
         </div>
       </div>
@@ -272,15 +257,23 @@ export const Productos = () => {
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-10">
       <header className="max-w-2xl">
-        <h1 className="font-display text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-          Nuestros Productos
+        <p className="font-mono text-[10px] uppercase tracking-[0.24em] text-primary">
+          Catálogo
+        </p>
+        <h1 className="mt-2 font-display text-3xl font-semibold tracking-tight text-foreground sm:text-5xl">
+          Instrumentos
         </h1>
         <p className="mt-2 text-base text-muted-foreground">
-          Explora nuestra colección de instrumentos musicales de alta calidad
+          Explora nuestra colección de instrumentos musicales de alta calidad.
         </p>
         {soloFavoritos && (
           <div className="mt-3 flex flex-wrap items-center gap-2">
-            <Badge variant="secondary">Mostrando favoritos</Badge>
+            <Badge
+              variant="outline"
+              className="rounded-full border-border/60 bg-muted/40 font-mono text-[9px] uppercase tracking-[0.16em]"
+            >
+              Mostrando favoritos
+            </Badge>
             <Button
               variant="ghost"
               size="sm"
@@ -292,14 +285,18 @@ export const Productos = () => {
         )}
       </header>
 
-      <Card className="mt-8">
-        <CardContent>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:items-end">
+      <div className="mt-8 border-y border-border/60 py-4">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:items-end">
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="busqueda">Buscar</Label>
+              <Label
+                htmlFor="busqueda"
+                className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground"
+              >
+                Buscar
+              </Label>
               <div className="relative">
                 <Search
-                  className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+                  className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
                   aria-hidden="true"
                 />
                 <Input
@@ -308,7 +305,7 @@ export const Productos = () => {
                   placeholder="Nombre, marca o modelo..."
                   value={busqueda}
                   onChange={(e) => setBusqueda(e.target.value)}
-                  className="pl-8"
+                  className="pl-10"
                 />
               </div>
             </div>
@@ -321,7 +318,12 @@ export const Productos = () => {
             />
 
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="ordenamiento">Ordenar por</Label>
+              <Label
+                htmlFor="ordenamiento"
+                className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground"
+              >
+                Ordenar por
+              </Label>
               <Select value={ordenamiento} onValueChange={setOrdenamiento}>
                 <SelectTrigger id="ordenamiento" className="w-full">
                   <SelectValue placeholder="Ordenar por" />
@@ -340,119 +342,53 @@ export const Productos = () => {
               Limpiar filtros
             </Button>
           </div>
-        </CardContent>
-      </Card>
+        </div>
 
-      <p className="mt-6 text-sm text-muted-foreground">
+      <p className="mt-6 font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
         Mostrando {instrumentosPaginados.length} de{" "}
         {instrumentosFiltrados.length} instrumentos
-        {totalPaginas > 1 && ` (Página ${paginaActual} de ${totalPaginas})`}
       </p>
 
-      <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {instrumentosPaginados.map((instrumento) => (
+      <div className="mt-8 grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
+        {instrumentosPaginados.map((instrumento, index) => (
           <InstrumentoCard
             key={`instrumento-${instrumento.id}`}
             instrumento={instrumento}
+            index={index}
           />
         ))}
       </div>
 
       {instrumentosFiltrados.length === 0 && (
-        <Card className="mt-6">
-          <CardContent className="flex flex-col items-center gap-4 py-10 text-center">
-            <p className="text-sm text-muted-foreground">
-              {soloFavoritos
-                ? "Todavía no marcaste instrumentos como favoritos. Usá el corazón en las tarjetas o en el detalle."
-                : "No se encontraron instrumentos que coincidan con los filtros aplicados."}
-            </p>
+        <Card className="mt-6 rounded-2xl border-dashed border-border/60 bg-card/40">
+          <CardContent className="flex flex-col items-center gap-4 py-12 text-center">
+            <span className="grid size-12 place-items-center rounded-full border border-border/60 bg-muted/40">
+              <Search
+                className="size-5 text-muted-foreground"
+                aria-hidden="true"
+              />
+            </span>
+            <div>
+              <p className="font-display text-xl font-semibold text-foreground">
+                Sin resultados
+              </p>
+              <p className="mt-1 max-w-md text-sm text-muted-foreground">
+                {soloFavoritos
+                  ? "Todavía no marcaste instrumentos como favoritos. Usá el corazón en las tarjetas o en el detalle."
+                  : "No se encontraron instrumentos que coincidan con los filtros aplicados."}
+              </p>
+            </div>
             <Button onClick={limpiarFiltros}>Limpiar filtros</Button>
           </CardContent>
         </Card>
       )}
 
       {totalPaginas > 1 && (
-        <Pagination className="mt-8">
-          <PaginationContent>
-            <PaginationItem>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => cambiarPagina(paginaActual - 1)}
-                disabled={paginaActual === 1}
-              >
-                <ChevronLeft aria-hidden="true" />
-                Anterior
-              </Button>
-            </PaginationItem>
-
-            {paginaActual > 3 && (
-              <>
-                <PaginationItem>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => cambiarPagina(1)}
-                    aria-label="Página 1"
-                  >
-                    1
-                  </Button>
-                </PaginationItem>
-                {paginaActual > 4 && (
-                  <PaginationItem>
-                    <PaginationEllipsis />
-                  </PaginationItem>
-                )}
-              </>
-            )}
-
-            {generarNumerosPagina().map((numero) => (
-              <PaginationItem key={numero}>
-                <Button
-                  variant={numero === paginaActual ? "outline" : "ghost"}
-                  size="icon"
-                  onClick={() => cambiarPagina(numero)}
-                  aria-label={`Página ${numero}`}
-                  aria-current={numero === paginaActual ? "page" : undefined}
-                >
-                  {numero}
-                </Button>
-              </PaginationItem>
-            ))}
-
-            {paginaActual < totalPaginas - 2 && (
-              <>
-                {paginaActual < totalPaginas - 3 && (
-                  <PaginationItem>
-                    <PaginationEllipsis />
-                  </PaginationItem>
-                )}
-                <PaginationItem>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => cambiarPagina(totalPaginas)}
-                    aria-label={`Página ${totalPaginas}`}
-                  >
-                    {totalPaginas}
-                  </Button>
-                </PaginationItem>
-              </>
-            )}
-
-            <PaginationItem>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => cambiarPagina(paginaActual + 1)}
-                disabled={paginaActual === totalPaginas}
-              >
-                Siguiente
-                <ChevronRight aria-hidden="true" />
-              </Button>
-            </PaginationItem>
-          </PaginationContent>
-        </Pagination>
+        <CatalogPagination
+          page={paginaActual}
+          totalPages={totalPaginas}
+          onPageChange={cambiarPagina}
+        />
       )}
     </div>
   )

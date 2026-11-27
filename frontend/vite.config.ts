@@ -26,4 +26,21 @@ export default defineConfig({
       },
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          "react-vendor": ["react", "react-dom", "react-router-dom"],
+          "motion-vendor": ["motion"],
+          "ui-vendor": [
+            "radix-ui",
+            "lucide-react",
+            "sonner",
+            "class-variance-authority",
+            "cn",
+          ],
+        },
+      },
+    },
+  },
 })

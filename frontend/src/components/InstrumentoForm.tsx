@@ -314,15 +314,20 @@ export const InstrumentoForm = ({
     }
   }
 
-  const errorText = (key: string) =>
+  const errorText = (key: string, id: string) =>
     errors[key] ? (
-      <p className="text-xs text-destructive">{errors[key]}</p>
+      <p id={id} role="alert" className="text-xs text-destructive">
+        {errors[key]}
+      </p>
     ) : null
 
   return (
     <section className="mx-auto w-full max-w-4xl px-4 py-10">
-      <h1 className="font-display text-2xl font-bold tracking-tight text-foreground">
-        {instrumento ? "Editar Instrumento" : "Crear Nuevo Instrumento"}
+      <p className="font-mono text-[10px] uppercase tracking-[0.24em] text-primary">
+        Administración
+      </p>
+      <h1 className="mt-2 font-display text-3xl font-semibold tracking-tight text-foreground">
+        {instrumento ? "Editar instrumento" : "Crear instrumento"}
       </h1>
 
       <form onSubmit={handleSubmit} className="mt-6 grid gap-6">
@@ -338,9 +343,12 @@ export const InstrumentoForm = ({
               value={formData.instrumento}
               onChange={handleChange}
               aria-invalid={Boolean(errors.instrumento)}
+              aria-describedby={
+                errors.instrumento ? "instrumento-error" : undefined
+              }
               placeholder="Ej: Guitarra Acústica"
             />
-            {errorText("instrumento")}
+            {errorText("instrumento", "instrumento-error")}
           </div>
 
           <div className="flex flex-col gap-1.5">
@@ -354,9 +362,10 @@ export const InstrumentoForm = ({
               value={formData.marca}
               onChange={handleChange}
               aria-invalid={Boolean(errors.marca)}
+              aria-describedby={errors.marca ? "marca-error" : undefined}
               placeholder="Ej: Yamaha"
             />
-            {errorText("marca")}
+            {errorText("marca", "marca-error")}
           </div>
 
           <div className="flex flex-col gap-1.5">
@@ -370,9 +379,10 @@ export const InstrumentoForm = ({
               value={formData.modelo}
               onChange={handleChange}
               aria-invalid={Boolean(errors.modelo)}
+              aria-describedby={errors.modelo ? "modelo-error" : undefined}
               placeholder="Ej: FG800"
             />
-            {errorText("modelo")}
+            {errorText("modelo", "modelo-error")}
           </div>
 
           <div className="flex flex-col gap-1.5">
@@ -387,6 +397,9 @@ export const InstrumentoForm = ({
                 id="idCategoria"
                 className="w-full"
                 aria-invalid={Boolean(errors.idCategoria)}
+                aria-describedby={
+                  errors.idCategoria ? "idCategoria-error" : undefined
+                }
               >
                 <SelectValue placeholder="Seleccionar categoría" />
               </SelectTrigger>
@@ -398,7 +411,7 @@ export const InstrumentoForm = ({
                 ))}
               </SelectContent>
             </Select>
-            {errorText("idCategoria")}
+            {errorText("idCategoria", "idCategoria-error")}
           </div>
 
           <div className="flex flex-col gap-1.5">
@@ -416,13 +429,14 @@ export const InstrumentoForm = ({
                 value={formData.precio}
                 onChange={handleChange}
                 aria-invalid={Boolean(errors.precio)}
+                aria-describedby={errors.precio ? "precio-error" : undefined}
                 placeholder="25000"
                 min="0"
                 step="0.01"
                 className="pl-6"
               />
             </div>
-            {errorText("precio")}
+            {errorText("precio", "precio-error")}
           </div>
 
           <div className="flex flex-col gap-1.5">
@@ -456,16 +470,21 @@ export const InstrumentoForm = ({
                 </span>
                 <Input
                   type="number"
+                  id="costoEnvio"
+                  aria-label="Costo de envío"
                   value={costoEnvioCustom}
                   onChange={(e) => setCostoEnvioCustom(e.target.value)}
                   aria-invalid={Boolean(errors.costoEnvio)}
+                  aria-describedby={
+                    errors.costoEnvio ? "costoEnvio-error" : undefined
+                  }
                   placeholder="1500"
                   min="0"
                   className="pl-6"
                 />
               </div>
             )}
-            {errorText("costoEnvio")}
+            {errorText("costoEnvio", "costoEnvio-error")}
           </div>
 
           <div className="flex flex-col gap-1.5">
@@ -483,8 +502,8 @@ export const InstrumentoForm = ({
 
           <div className="flex flex-col gap-2 sm:col-span-2">
             <span className="text-sm font-medium">Imagen del Producto</span>
-            <div className="flex flex-col gap-4 rounded-xl border border-border p-4 sm:flex-row">
-              <div className="flex aspect-video w-full max-w-52 items-center justify-center overflow-hidden rounded-lg bg-muted sm:aspect-square">
+            <div className="flex flex-col gap-4 rounded-2xl border border-border/60 bg-card/40 p-4 sm:flex-row">
+              <div className="flex aspect-video w-full max-w-52 items-center justify-center overflow-hidden rounded-xl bg-muted sm:aspect-square">
                 {imagePreview ? (
                   <img
                     src={imagePreview}

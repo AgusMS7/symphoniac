@@ -27,7 +27,12 @@ export const FiltroCategoria: React.FC<FiltroCategoriaProps> = ({
 }) => {
   return (
     <div className="flex flex-col gap-1.5">
-      <Label htmlFor="categoria-select">Filtrar por categoría</Label>
+      <Label
+        htmlFor="categoria-select"
+        className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground"
+      >
+        Filtrar por categoría
+      </Label>
       <Select
         value={categoriaSeleccionada || ALL}
         onValueChange={(value) =>
@@ -35,7 +40,7 @@ export const FiltroCategoria: React.FC<FiltroCategoriaProps> = ({
         }
         disabled={loading}
       >
-        <SelectTrigger id="categoria-select" className="w-full sm:w-56">
+        <SelectTrigger id="categoria-select" className="w-full">
           <SelectValue placeholder="Todas las categorías" />
         </SelectTrigger>
         <SelectContent>
