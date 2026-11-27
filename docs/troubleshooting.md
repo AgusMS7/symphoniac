@@ -18,9 +18,9 @@ uploads.
 | Uploads desaparecen tras un redeploy | Filesystem efímero de Render/Vercel; la demo además deshabilita uploads | En demo no se sube nada. Si se necesita persistencia, usar un disco o almacenamiento externo; en local el volumen `uploads` sobrevive a `down` pero no a `down -v` |
 | El backend no conecta a la base | `DB_URL`, usuario o password incorrectos; la DB no está healthy | Revisar `docker compose ps` y `docker compose logs backend`; esperar el healthcheck; validar `DB_URL` |
 | El frontend no encuentra la API | `VITE_API_URL` incorrecta o build args no aplicados | En Docker dejar `/api`; en Vercel usar la URL absoluta; reconstruir/redeployar tras cambiar `VITE_*` |
+| Aparece el snapshot estático en lugar del catálogo | El backend está dormido, caído o inaccesible (CORS o URL); el frontend espera 8 s | Revisar la consola del navegador: `[symphoniac] Error al conectar con el backend` o `[symphoniac] Backend no disponible; usando snapshot estático`. Verificar `GET /api/instrumentos` y despertar el backend; cuando responda, la consola muestra `[symphoniac] Backend conectado; catálogo actualizado desde el backend` |
 | `npm ci` falla por versión de Node | Vite 7 exige `^20.19.0 || >=22.12.0` | Usar Node 22 o superior; en CI ya está fijado |
 | `mvnw` no ejecuta en Linux/macOS | Falta permiso de ejecución | `chmod +x mvnw` o `sh ./mvnw -B verify` |
-| `/design-preview` no aparece en el router | Es una maqueta temporal montada por pathname | No es un bug; se retira en la fase de limpieza |
 
 ## Diagnóstico rápido
 

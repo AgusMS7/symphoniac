@@ -15,7 +15,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
-import { Skeleton } from "@/components/ui/skeleton"
+import { DataLoading } from "../components/DataLoading"
 import { useFavorites } from "../data/hooks"
 import { toggleFavorite } from "../data/localStore"
 import type {
@@ -66,8 +66,10 @@ export const DetalleInstrumento: React.FC = () => {
           await fetchCategoria(instrumentoData.idCategoria)
         }
 
-        // Cargar imágenes
-        await fetchImages(instrumentoId)
+        // Las imágenes se cargan en segundo plano: la ficha ya puede
+        // renderizarse con `instrumento.imagen` y se actualiza si el backend
+        // responde.
+        void fetchImages(instrumentoId)
       } else {
         setError("Instrumento no encontrado")
       }
@@ -119,21 +121,7 @@ export const DetalleInstrumento: React.FC = () => {
   }
 
   if (loading) {
-    return (
-      <div className="mx-auto w-full max-w-6xl px-4 py-10">
-        <Skeleton className="h-9 w-36 rounded-full" />
-        <div className="mt-6 grid gap-8 lg:grid-cols-[1.05fr_0.95fr]">
-          <Skeleton className="aspect-square w-full rounded-2xl" />
-          <div className="flex flex-col gap-4">
-            <Skeleton className="h-4 w-24 rounded-full" />
-            <Skeleton className="h-12 w-3/4 rounded-xl" />
-            <Skeleton className="h-4 w-40 rounded-full" />
-            <Skeleton className="h-24 w-full rounded-xl" />
-            <Skeleton className="h-12 w-48 rounded-full" />
-          </div>
-        </div>
-      </div>
-    )
+    return <DataLoading />
   }
 
   if (error || !instrumento) {

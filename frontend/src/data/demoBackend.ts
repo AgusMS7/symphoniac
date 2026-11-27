@@ -5,6 +5,7 @@ import type {
   ProductImage,
   ServiceResponse,
 } from "../types/Instrumento"
+import demoSnapshot from "./demoSnapshot.json"
 import { emitCatalogUpdated } from "./events"
 import { removeCartItems, removeFavorites } from "./localStore"
 import {
@@ -26,11 +27,125 @@ import type {
   InstrumentoService,
 } from "./types"
 
+const SNAPSHOT_TIMEOUT_MS = 8_000
 const REFRESH_INTERVAL_MS = 15_000
 
+const CATALOG_FROM_BACKEND_LOG = "[symphoniac] Catálogo cargado desde el backend"
+const SNAPSHOT_LOG = "[symphoniac] Backend no disponible; usando snapshot estático"
+const BACKEND_CONNECTED_LOG =
+  "[symphoniac] Backend conectado; catálogo actualizado desde el backend"
+const BACKEND_ERROR_LOG = "[symphoniac] Error al conectar con el backend"
+
+const snapshot: CatalogBase = demoSnapshot
+
 let baseInFlight: Promise<CatalogBase> | null = null
+let initialLoadInFlight: Promise<CatalogBase> | null = null
 let refreshInFlight: Promise<void> | null = null
+let retryTimer: ReturnType<typeof setTimeout> | null = null
 let lastAttemptAt = 0
+let snapshotActive = false
+let snapshotBase: CatalogBase | null = null
+
+class SnapshotTimeoutError extends Error {
+  constructor() {
+    super("El backend no respondió a tiempo")
+    this.name = "SnapshotTimeoutError"
+  }
+}
+
+function getSnapshotBase(): CatalogBase {
+  if (!snapshotBase) {
+    snapshotBase = snapshot
+  }
+  return snapshotBase
+}
+
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new SnapshotTimeoutError()), ms)
+    promise.then(
+      (value) => {
+        clearTimeout(timer)
+        resolve(value)
+      },
+      (error) => {
+        clearTimeout(timer)
+        reject(error)
+      },
+    )
+  })
+}
+
+function catalogCounts(base: CatalogBase): {
+  instrumentos: number
+  categorias: number
+} {
+  return {
+    instrumentos: base.instrumentos.length,
+    categorias: base.categorias.length,
+  }
+}
+
+function cacheBase(base: CatalogBase): boolean {
+  const previous = readCache()
+  const changed =
+    !previous || JSON.stringify(previous) !== JSON.stringify(base)
+  writeCache(base)
+  return changed
+}
+
+function logCatalogFromBackend(base: CatalogBase): void {
+  console.info(CATALOG_FROM_BACKEND_LOG, catalogCounts(base))
+}
+
+function handleBackendConnected(base: CatalogBase): void {
+  cacheBase(base)
+  const wasSnapshot = snapshotActive
+  snapshotActive = false
+  snapshotBase = null
+  if (retryTimer) {
+    clearTimeout(retryTimer)
+    retryTimer = null
+  }
+  lastAttemptAt = Date.now()
+  if (wasSnapshot) emitCatalogUpdated()
+  console.info(BACKEND_CONNECTED_LOG)
+}
+
+function scheduleSnapshotRetry(): void {
+  if (!snapshotActive || retryTimer) return
+  const elapsed = Date.now() - lastAttemptAt
+  const delay = Math.max(0, REFRESH_INTERVAL_MS - elapsed)
+  retryTimer = setTimeout(() => {
+    retryTimer = null
+    void retryFromSnapshot()
+  }, delay)
+}
+
+async function retryFromSnapshot(): Promise<void> {
+  if (!snapshotActive || refreshInFlight) return
+  if (Date.now() - lastAttemptAt < REFRESH_INTERVAL_MS) {
+    scheduleSnapshotRetry()
+    return
+  }
+
+  lastAttemptAt = Date.now()
+  refreshInFlight = (async () => {
+    const remote = fetchBaseFromRemote()
+    try {
+      const base = await withTimeout(remote, SNAPSHOT_TIMEOUT_MS)
+      handleBackendConnected(base)
+    } catch (error) {
+      remote.catch(() => {})
+      console.error(BACKEND_ERROR_LOG, error)
+      scheduleSnapshotRetry()
+    } finally {
+      refreshInFlight = null
+    }
+  })()
+
+  await refreshInFlight
+}
 
 interface InstrumentoPayload {
   instrumento?: string
@@ -56,7 +171,7 @@ async function fetchBaseFromRemote(): Promise<CatalogBase> {
     remoteBackend.categoriaService.getAll(),
   ])
 
-  let instrumentos: Instrumento[] = []
+  let instrumentos: Instrumento[] | null = null
   if (Array.isArray(instrumentosRes)) {
     instrumentos = instrumentosRes
   } else if (Array.isArray(instrumentosRes.data)) {
@@ -65,11 +180,15 @@ async function fetchBaseFromRemote(): Promise<CatalogBase> {
     instrumentos = instrumentosRes.content
   }
 
-  let categorias: Categoria[] = []
+  let categorias: Categoria[] | null = null
   if (Array.isArray(categoriasRes)) {
     categorias = categoriasRes
   } else if (Array.isArray(categoriasRes.data)) {
     categorias = categoriasRes.data
+  }
+
+  if (!instrumentos || !categorias) {
+    throw new Error("Respuesta inválida del backend")
   }
 
   return { instrumentos, categorias }
@@ -90,21 +209,59 @@ function refreshInBackground(): void {
 
   lastAttemptAt = Date.now()
   refreshInFlight = (async () => {
+    const remote = fetchBaseFromRemote()
     try {
-      const base = await fetchBaseFromRemote()
-      const previous = readCache()
-      const changed =
-        !previous || JSON.stringify(previous) !== JSON.stringify(base)
-
-      writeCache(base)
-
+      const base = await withTimeout(remote, SNAPSHOT_TIMEOUT_MS)
+      const changed = cacheBase(base)
+      logCatalogFromBackend(base)
       if (changed) emitCatalogUpdated()
     } catch (error) {
-      console.error("No se pudo refrescar el catálogo remoto", error)
+      remote.catch(() => {})
+      console.error(BACKEND_ERROR_LOG, error)
     } finally {
       refreshInFlight = null
     }
   })()
+}
+
+function attemptInitialLoad(): Promise<CatalogBase> {
+  if (!initialLoadInFlight) {
+    initialLoadInFlight = loadInitialBase().finally(() => {
+      initialLoadInFlight = null
+    })
+  }
+  return initialLoadInFlight
+}
+
+async function loadInitialBase(): Promise<CatalogBase> {
+  lastAttemptAt = Date.now()
+  const remote = loadBase()
+
+  try {
+    const base = await withTimeout(remote, SNAPSHOT_TIMEOUT_MS)
+    cacheBase(base)
+    logCatalogFromBackend(base)
+    return base
+  } catch (error) {
+    console.error(BACKEND_ERROR_LOG, error)
+    snapshotActive = true
+    const fallback = getSnapshotBase()
+    console.warn(SNAPSHOT_LOG, catalogCounts(fallback))
+    scheduleSnapshotRetry()
+
+    // La promesa del backend sigue viva: si responde más tarde, se reemplaza
+    // el snapshot y se avisa a la UI.
+    if (error instanceof SnapshotTimeoutError) {
+      remote.then(
+        (base) => handleBackendConnected(base),
+        (lateError) => {
+          console.error(BACKEND_ERROR_LOG, lateError)
+        },
+      )
+    }
+
+    return fallback
+  }
 }
 
 async function getBase(): Promise<CatalogBase> {
@@ -115,10 +272,12 @@ async function getBase(): Promise<CatalogBase> {
     return cached
   }
 
-  const base = await loadBase()
-  writeCache(base)
-  lastAttemptAt = Date.now()
-  return base
+  if (snapshotActive) {
+    scheduleSnapshotRetry()
+    return getSnapshotBase()
+  }
+
+  return attemptInitialLoad()
 }
 
 async function getMergedCatalog(): Promise<CatalogBase> {

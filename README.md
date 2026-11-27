@@ -9,7 +9,7 @@
 
 **[Ver código](https://github.com/AgusMS7/symphoniac)** · **[Contáctame](mailto:agustin.matias.sandoval@gmail.com)**
 
-Demo de solo lectura, sin registro. 120 tests y CI en tres jobs.
+Demo de solo lectura, sin registro. 129 tests y CI en tres jobs.
 
 React 19 · TypeScript · Spring Boot 3.5 · PostgreSQL 17 · Docker
 
@@ -41,7 +41,7 @@ está construida.
 - Demo de solo lectura: el backend responde 405 a escrituras; carrito y
   favoritos son locales.
 - Entorno reproducible con Docker Compose (PostgreSQL + backend + Nginx).
-- 120 tests y CI en tres jobs.
+- 129 tests y CI en tres jobs.
 
 ## Recorrido
 
@@ -81,6 +81,16 @@ El esquema y el seed se aplican cuando se inicializa el volumen `pgdata`.
 `docker compose down -v` borra ese volumen y vuelve a sembrar la base en el
 próximo `up`; no lo uses sobre una base con datos que quieras conservar.
 
+### Primera carga y snapshot
+
+El backend del deploy puede tardar hasta ~60 segundos en despertar. El frontend
+espera 8 segundos y, si no obtiene respuesta, muestra un snapshot estático del
+catálogo (30 instrumentos y 5 categorías) empaquetado con la SPA. El snapshot no
+se escribe en `localStorage`: cuando el backend responde, el catálogo se
+reemplaza y la consola registra `[symphoniac] Backend conectado; catálogo
+actualizado desde el backend`. Mientras se muestra el snapshot, los reintentos
+siguen en segundo plano cada 15 segundos.
+
 ## Cómo está construido
 
 | Capa | Tecnología | Rol |
@@ -89,7 +99,7 @@ próximo `up`; no lo uses sobre una base con datos que quieras conservar.
 | Backend | Java 17 + Spring Boot 3.5.16 | API REST, JPA, validación, uploads |
 | Datos | PostgreSQL 17 | 5 tablas; esquema y seed reproducibles |
 | Orquestación | Docker Compose | db + backend + frontend + Nginx |
-| Tests | JUnit + Vitest + Playwright | 22 backend + 89 frontend + 9 E2E |
+| Tests | JUnit + Vitest + Playwright | 22 backend + 98 frontend + 9 E2E |
 | Deploy | Render + Neon + Vercel | Planificado; ver [despliegue](docs/deployment.md) |
 
 ```text
@@ -119,10 +129,10 @@ Decisiones con motivo:
 | Categorías | 5 | `backend/db/seed.sql` |
 | Endpoints de API | 24 | controllers; excluye `GET /` de estado |
 | Tests backend | 22 | `.\mvnw.cmd test` |
-| Tests frontend | 89 | `npm run test` |
+| Tests frontend | 98 | `npm run test` |
 | Tests E2E | 9 | `npm run test:e2e` |
 | Vulnerabilidades npm | 0 | `npm audit` (2026-11-27) |
-| Bundle de producción | Entry `index`: 265.48 kB (82.78 kB gzip); total emitido 887.66 kB | `npm run build` (2026-11-27) |
+| Bundle de producción | Entry `index`: 265.10 kB (82.61 kB gzip); total de assets 830.49 kB | `npm run build` (2026-11-27) |
 
 Las imágenes de seed son fotografías de stock de Pexels; autor, URL y licencia
 están en

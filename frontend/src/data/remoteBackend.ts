@@ -190,7 +190,12 @@ const imageService: ImageService = {
     return readJson<ServiceResponse<ProductImage>>(response)
   },
 
-  getImageUrl: (filename) => `${IMAGES_BASE_URL}/${filename}`,
+  getImageUrl: (filename) => {
+    if (filename.startsWith("/") || filename.startsWith("http")) {
+      return filename
+    }
+    return `${IMAGES_BASE_URL}/${filename}`
+  },
 }
 
 export const remoteBackend: DataBackend = {

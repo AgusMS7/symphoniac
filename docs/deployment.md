@@ -58,6 +58,25 @@ Caveats:
 - El contenedor corre como usuario no root y escucha en `PORT`.
 - Revisar memoria y tiempo de build del plan free.
 
+## Cold start, snapshot y logs
+
+El backend free se suspende por inactividad y el primer request puede tardar
+hasta ~60 segundos. El frontend espera 8 segundos; si la API no responde, usa el
+snapshot estático de `frontend/src/data/demoSnapshot.json` (30 instrumentos y 5
+categorías) y sus imágenes en `frontend/public/site/instruments/`. El snapshot
+no se guarda en `localStorage` y se reemplaza automáticamente cuando el backend
+conecta.
+
+Logs esperables en la consola del navegador:
+
+- `[symphoniac] Catálogo cargado desde el backend`: la API respondió.
+- `[symphoniac] Backend no disponible; usando snapshot estático`: se activó el
+  fallback tras 8 segundos o por error de red/HTTP/JSON.
+- `[symphoniac] Backend conectado; catálogo actualizado desde el backend`: el
+  backend despertó y reemplazó el snapshot.
+- `[symphoniac] Error al conectar con el backend`: detalle del fallo; los
+  reintentos siguen cada 15 segundos mientras se muestra el snapshot.
+
 ## Vercel
 
 Plan:
@@ -68,8 +87,8 @@ Plan:
    - `VITE_API_URL=https://<backend>/api`
    - `VITE_IMAGES_URL=https://<backend>/images`
    - `VITE_DEMO=true`
-4. Configurar el rewrite de SPA para que `/productos`, `/admin` y
-   `/instrumento/:id` no devuelvan 404 al refrescar:
+4. El rewrite de SPA ya está versionado en `frontend/vercel.json` para que
+   `/productos`, `/admin` y `/instrumento/:id` no devuelvan 404 al refrescar:
 
 ```json
 {
