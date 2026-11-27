@@ -93,14 +93,14 @@ class InstrumentoApiIntegrationTest extends AbstractPostgresIntegrationTest {
 
     @Test
     void imagenSemillaExistenteDevuelve200() throws Exception {
-        mockMvc.perform(get("/images/nro1.jpg"))
+        mockMvc.perform(get("/images/percussion-set.jpg"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.IMAGE_JPEG));
     }
 
     @Test
-    void imagenSemillaFaltanteDevuelve404() throws Exception {
-        mockMvc.perform(get("/images/guitarra-yamaha.jpg"))
+    void imagenInexistenteDevuelve404() throws Exception {
+        mockMvc.perform(get("/images/does-not-exist.jpg"))
                 .andExpect(status().isNotFound());
     }
 }

@@ -15,9 +15,8 @@ dist/
 dist-ssr/
 build/
 
-# Imágenes subidas en runtime (las semilla nro*.jpg sí se versionan)
+# Imágenes subidas en runtime (no versionadas)
 backend/public/images/*
-!backend/public/images/nro*.jpg
 
 # Logs
 *.log
